@@ -25,3 +25,27 @@ class Word:
 
         :return:
         """
+
+#
+# # check letter
+#         answer = input('Type the correct letter, please! \n').strip().lower()
+#         if word[gap_index] == answer:
+#             print('Yes')
+#         else:
+#             print('No')
+
+
+#
+# # word_with_gap
+#         word_part_1 = word[0:gap_index]
+#         if (b2 - b1) > 1:
+#             word_part_2 = word[gap_index + 1:]
+#         else:
+#             word_part_2 = word[gap_index:]
+#             word_with_gap = word_part_1 + '_' + word_part_2
+#             print(t_word, word, b2, b1, b2 - b1, gap_index, word_with_gap,
+#                   'There is no symbol. Type @ between brackets!')
+#             return 0
+#
+#         word_with_gap = word_part_1 + '_' + word_part_2
+#         print(t_word, word, b2, b1, b2 - b1, gap_index, word_with_gap)
