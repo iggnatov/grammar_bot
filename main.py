@@ -13,7 +13,7 @@
 
 
 # def get_word_list():
-#     f = open('words.txt', 'r')
+#     f = open('test_words.txt', 'r')
 #     try:
 #         word_list = f.readlines()
 #         word_list = [word.strip() for word in word_list]
@@ -23,26 +23,50 @@
 #     finally:
 #         f.close()
 
-def test(test_word):
+
+def test(t_word):
     try:
-        b1 = test_word.index('[')
-        b2 = test_word.index(']')
+        b1 = t_word.index('[')
+        b2 = t_word.index(']')
+
+        # gap_index
+        gap_index = b1
 
         # get word without brackets
-        word = test_word.replace('[', '')
+        word = t_word.replace('[', '')
         word = word.replace(']', '')
 
-        print(test_word, word, b2, b1, b2-b1)
+        # word_with_gap
+        word_part_1 = word[0:gap_index]
+        if (b2 - b1) > 1:
+            word_part_2 = word[gap_index + 1:]
+        else:
+            word_part_2 = word[gap_index:]
+            word_with_gap = word_part_1 + '_' + word_part_2
+            print(t_word, word, b2, b1, b2 - b1, gap_index, word_with_gap,
+                  'There is no symbol. Type @ between brackets!')
+            return 0
+
+        word_with_gap = word_part_1 + '_' + word_part_2
+        print(t_word, word, b2, b1, b2 - b1, gap_index, word_with_gap)
+
+        # check letter
+        answer = input('Type the correct letter, please! \n').strip().lower()
+        if word[gap_index] == answer:
+            print('Yes')
+        else:
+            print('No')
+
     except ValueError:
-        print(test_word, '- no brackets')
+        print(t_word, '- Attention! There is no brackets! Please, fix it out!')
 
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
+    set_name = 'test_words.txt'
     # get_word_list()
-    test_words = ['б[а]гаж', 'бил[]ет', 'баллон']
+
+    test_words = ['б[а]гаж', 'бил[]ет', 'баллон', 'береч[ь]']
     for test_word in test_words:
         test(test_word)
     pass
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
