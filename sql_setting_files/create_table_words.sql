@@ -1,6 +1,6 @@
 CREATE TABLE words (
-    id BIGINT NOT NULL PRIMARY KEY,
+    id BIGSERIAL NOT NULL PRIMARY KEY,
     word VARCHAR(50) NOT NULL UNIQUE,
-    gap_index SMALLINT,
-    mistakes BIGINT
+    gap_index SMALLSERIAL,
+    mistakes NUMERIC(4,2)
 );

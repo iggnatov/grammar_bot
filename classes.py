@@ -26,6 +26,13 @@ class Word:
         :return:
         """
 
+class User:
+    """definition"""
+
+    def __init__(self, vk_id, team_id):
+        self.vk_id = vk_id
+        self.team_id = team_id
+
 #
 # # check letter
 #         answer = input('Type the correct letter, please! \n').strip().lower()
@@ -33,7 +40,7 @@ class Word:
 #             print('Yes')
 #         else:
 #             print('No')
-
+#  mistakes - must be a relation mistakes / uses
 
 #
 # # word_with_gap
