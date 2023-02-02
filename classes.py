@@ -1,35 +1,16 @@
 class Word:
     """definition"""
 
-    def __init__(self, word, gap_index, mistakes):
+    def __init__(self, word='', gap_index=0, mistakes=0.00):
         self.word = word
         self.gap_index = gap_index
         self.mistakes = mistakes
 
-    def create(self, word_list):
-        """
-
-        :param word_list:
-        :return:
-        """
-
-    def update(self, mistakes):
-        """
-
-        :param mistakes:
-        :return:
-        """
-
-    def delete(self):
-        """
-
-        :return:
-        """
 
 class User:
     """definition"""
 
-    def __init__(self, vk_id, team_id):
+    def __init__(self, vk_id=0, team_id=0):
         self.vk_id = vk_id
         self.team_id = team_id
 
