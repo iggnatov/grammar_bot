@@ -4,17 +4,18 @@ import psycopg2
 class Word:
     """definition"""
 
-    def __init__(self, word, gap_index, mistakes=0):
+    def __init__(self, word, gap_index, mistakes=0.00):
         self.word = word
         self.gap_index = gap_index
         self.mistakes = mistakes
 
     def create(self, word_list):
         """
-
+        skdjgsdg sg
         :param word_list:
         :return:
         """
+
 
 
 
