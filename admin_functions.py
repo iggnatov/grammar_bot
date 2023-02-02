@@ -5,7 +5,8 @@ def get_word_list(file_name):
         word_list = [s_word.strip() for s_word in word_list]
         list_name = word_list[0]
 
-        sql_file = open(word_list[0] + '.sql', 'a')
+        sql_file = open('sql_setting_files/' + word_list[0] + '.sql', 'a')
+        # sql_file = open(word_list[0] + '.sql', 'a')
         try:
             for start_word in word_list[1:]:
                 # making a word
