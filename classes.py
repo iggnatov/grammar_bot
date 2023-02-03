@@ -1,11 +1,62 @@
+class WordSet:
+
+    def __init__(self, set_name):
+        self.set_name = set_name
+
+    def create (self):
+        file_name = input('Type the file name of the set. Don\'t forget to type \'.txt\'')
+        f = open(file_name, 'r')
+        try:
+            word_list = f.readlines()
+            word_list = [s_word.strip() for s_word in word_list]
+
+            for each_word in word_list[0:]:
+
+                # making a word
+                word = Word(each_word, self.set_name)
+                word.add_to_sql_file()
+
+        finally:
+            f.close()
+
+
 class Word:
     """definition"""
 
-    def __init__(self, word='', gap_index=0, mistakes=0.00):
+    # def __init__(self, word='', gap_index=0, gap_type='', mistakes=0.00, word_sets=''):
+    def __init__(self, word='', word_set=''):
         self.word = word
-        self.gap_index = gap_index
-        self.mistakes = mistakes
+        self.gap_index = self.get_gap_index()
+        self.gap_type = self.get_gap_type()
+        self.mistakes = 0
+        self.word_set = word_set
 
+    def get_gap_index(self):
+        gap_index = self.word.index('[')
+        return gap_index
+
+    def get_word_without_brackets(self):
+        word_without_brackets = self.word.replace('[', '').replace(']', '')
+        return word_without_brackets
+
+    def get_gap_type(self):
+        if self.word.index(']') - self.word.index('[') == 1:
+            gap_type = 'no_gap'
+        else:
+            gap_type = ''
+        return gap_type
+
+    def add_to_sql_file(self):
+        sql_file = open('sql_setting_files/tempdata.sql', 'a')
+
+        try:
+            sql_file.write(
+                f"INSERT INTO words (word, gap_index, gap_type, mistakes, word_sets) \
+                VALUES ('{self.word}',{self.gap_index}, {self.gap_type}, {self.mistakes}, {self.word_set});\n"
+            )
+
+        finally:
+            sql_file.close()
 
 class User:
     """definition"""
