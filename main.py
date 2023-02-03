@@ -12,6 +12,15 @@ if __name__ == '__main__':
     # my_word = Word('test_word', 2)
     # print(my_word.word, my_word.gap_index, my_word.mistakes)
 
+    while True:
+        us = input('My small menu: type \'connection\' or \'q\'')
+        if us == 'connection':
+            continue
+        elif us == 'q':
+            break
+        else:
+            continue
+
 
 
     # get database configs: dbname, user, password, host
@@ -21,7 +30,7 @@ if __name__ == '__main__':
         # for elem in data:
         #     # print(type(data), elem, '-', data[elem])
 
-    connection = ''
+    # connection = ''
     # connect to db
     try:
         # with closing(psycopg2.connect(dbname=data['dbname'], user=data['user'],
