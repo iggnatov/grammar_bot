@@ -1,6 +1,6 @@
 import admin_functions as af
 import psycopg2
-from contextlib import closing
+# from contextlib import closing
 from psycopg2 import Error
 import json
 
@@ -20,6 +20,7 @@ if __name__ == '__main__':
         # print(data['dbname'])
         # for elem in data:
         #     # print(type(data), elem, '-', data[elem])
+
     connection = ''
     # connect to db
     try:
@@ -31,7 +32,7 @@ if __name__ == '__main__':
         #         pass
         connection = psycopg2.connect(user=j_data['user'],password=j_data['password'],
                                       host=j_data['host'], port='5432', database=j_data['dbname'])
-        print(connection)
+
         cursor = connection.cursor()
         # Распечатать сведения о PostgreSQL
         print("Информация о сервере PostgreSQL")
