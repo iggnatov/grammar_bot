@@ -1,3 +1,10 @@
+def check_word_sets():
+    if input('Type 1') == '1':
+        return True
+    else:
+        return False
+
+
 class Word:
     """definition"""
 
@@ -38,6 +45,11 @@ class Word:
         # и спросить пользователя о добавлении другого набора к этому слову
         #  если да - добавить набор к существующему слову
         #  если нет - пропустить слово и перейти к следующему слову
-        print('starting to get word full command...')
-        return f"""INSERT INTO words (word, gap_index, gap_type, mistakes, word_sets) 
-        VALUES ('{self.word_without_brackets}', {self.gap_index}, '{self.gap_type}', {self.mistakes}, '{self.word_set}');\n"""
+        if check_word_sets():
+            print('Starting to get word full command...')
+            return f"""INSERT INTO words (word, gap_index, gap_type, mistakes, word_sets) 
+                    VALUES ('{self.word_without_brackets}', {self.gap_index}, '{self.gap_type}', {self.mistakes}, '{self.word_set}');\n"""
+        else:
+            print('Must add a word_set')
+            return 0
+

@@ -1,5 +1,5 @@
 import psycopg2
-from psycopg2 import Error
+from psycopg2 import Error, errors
 import os
 import class_word
 import json
@@ -12,12 +12,12 @@ def choose_word_set_to_add():
     # The list of items
     files = os.listdir(path)
 
-    print('Choose (Type) the file with words to add\n')
+    print('Choose (Type) the file with words to add:')
 
     # Loop to print each filename separately
     for filename in files:
         print(filename)
-    print('\n')
+
     return '/home/admin/grammar_bot/word_sets/' + input()
 
 
@@ -69,6 +69,8 @@ class WordSet:
             finally:
                 f.close()
 
+        except psycopg2.errors.UniqueViolation:
+            print(f'Such a word already exists')
 
         except (Exception, Error) as error:
             print("Ошибка при работе с PostgreSQL", error)
