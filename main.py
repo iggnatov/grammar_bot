@@ -1,4 +1,4 @@
-import class_wordset
+import grammar
 
 
 if __name__ == '__main__':
@@ -8,9 +8,8 @@ if __name__ == '__main__':
                     'Type \'Q\' to quit \n')
         if us == 'A':
             input_name = input('...adding a new word_set \nType the set_name, please! \n')
-            word_set = class_wordset.WordSet(input_name)
+            word_set = grammar.WordSet(input_name)
             word_set.create()
-
 
         elif us == 'Q':
             break
