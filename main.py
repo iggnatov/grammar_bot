@@ -7,8 +7,7 @@ if __name__ == '__main__':
                     'Type \'A\' to add a word_set \n'
                     'Type \'Q\' to quit \n')
         if us == 'A':
-            input_name = input('...adding a new word_set \nType the set_name, please! \n')
-            word_set = grammar.WordSet(input_name)
+            word_set = grammar.WordSet()
             word_set.create()
 
         elif us == 'Q':
