@@ -100,25 +100,42 @@ class WordSet:
 
             i = 0
             for each_word in word_list[0:]:
-                i += 1
                 # making a word
                 word_without_brackets = each_word.replace('[', '').replace(']', '')
                 gap_index = each_word.index('[')
 
-                # adding word
-                cursor.execute(f"""INSERT INTO words (word, gap_index) 
-                                VALUES ('{word_without_brackets}', {gap_index});""")
-                connection.commit()
+                cursor.execute(f"""SELECT * FROM words WHERE word = '{word_without_brackets}'""")
+                quantity_of_words = len(cursor.fetchall())
+                # print(quantity_of_words)
 
-                # getting id of added word
-                cursor.execute(f"""SELECT id FROM words
-                                WHERE word = '{word_without_brackets}';""")
-                word_id = cursor.fetchone()
+                if quantity_of_words != 0:
+                    # getting id of existing word
+                    cursor.execute(f"""SELECT id FROM words
+                                    WHERE word = '{word_without_brackets}';""")
+                    word_id = cursor.fetchone()
+                    # making only a relation between word and set
+                    cursor.execute(f"""INSERT INTO rel_words_sets (word_id, set_id) 
+                                    VALUES ({word_id[0]}, {record_id[0]});""")
+                    connection.commit()
 
-                # making a relation between word and set
-                cursor.execute(f"""INSERT INTO rel_words_sets (word_id, set_id) 
-                                VALUES ({word_id[0]}, {record_id[0]});""")
-                connection.commit()
+
+                else:
+                    # adding word
+                    i += 1
+                    cursor.execute(f"""INSERT INTO words (word, gap_index) 
+                                    VALUES ('{word_without_brackets}', {gap_index});""")
+                    connection.commit()
+
+                    # getting id of added word
+                    cursor.execute(f"""SELECT id FROM words
+                                    WHERE word = '{word_without_brackets}';""")
+                    word_id = cursor.fetchone()
+
+                    # making a relation between word and set
+                    cursor.execute(f"""INSERT INTO rel_words_sets (word_id, set_id) 
+                                    VALUES ({word_id[0]}, {record_id[0]});""")
+                    connection.commit()
+
         print(i, ' words were added to database')
         cursor.close()
         connection.close()
