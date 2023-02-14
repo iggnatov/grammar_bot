@@ -5,10 +5,11 @@ import json
 
 class WordSet:
 
-    def __init__(self):
-        self.set_name = self.choose_word_set_name()
-        self.set_status = self.choose_set_status()
-        self.set_file_name = self.choose_word_set_to_add()
+    # def __init__(self):
+    #     print('Object created')
+        # self.set_name = self.choose_word_set_name()
+        # self.set_status = self.choose_set_status()
+        # self.set_file_name = self.choose_word_set_to_add()
 
     @staticmethod
     def choose_word_set_name():
@@ -41,93 +42,165 @@ class WordSet:
         set_file_name = input()
         return set_file_name
 
-    def create(self):
-        with open('/Users/iggnatov/Documents/dev/grammar_bot/sql_setting_files/config_file.txt', 'r') as json_file:
+
+    @staticmethod
+    def connect():
+        # getting connection configs
+        config_path = '/Users/iggnatov/Documents/dev/grammar_bot/sql_setting_files/config_file.txt'
+        with open(config_path, 'r') as json_file:
             j_data = json.load(json_file)
 
+        # connecting to database
         try:
-            connection = psycopg2.connect(user=j_data['user'], password=j_data['password'],
+            conn = psycopg2.connect(user=j_data['user'], password=j_data['password'],
                                           host=j_data['host'], port='5433', database=j_data['dbname'])
-            cursor = connection.cursor()
-            # print(connection.get_dsn_parameters(), "\n")
-            cursor.execute("SELECT version();")
-            record = cursor.fetchone()
+            cur = conn.cursor()
+
+            cur.execute("SELECT version();")
+            record = cur.fetchone()
             print("You\'re connected to - ", record, "\n")
 
-            cursor.execute(f"""INSERT INTO word_sets (set_file_name, set_status, set_name) 
-                            VALUES ('{self.set_file_name}', '{self.set_status}', '{self.set_name}');""")
-            # record = cursor.fetchone()
-            print(record)
-            connection.commit()
-
-            cursor.execute(f"""SELECT id FROM word_sets 
-                            WHERE set_file_name = '{self.set_file_name}';""")
-            record_id = cursor.fetchone()
-            print('record_id: ', record_id[0])
-
-
-            f = open('/Users/iggnatov/Documents/dev/grammar_bot/word_sets/' + self.set_file_name, 'r')
-            print(f"File \'{self.set_file_name}\' opened")
-
-            try:
-                # making a word
-                word_list = f.readlines()
-                word_list = [s_word.strip() for s_word in word_list]
-                print('Word_list has been read')
-                i = 0
-                for each_word in word_list[0:]:
-                    i += 1
-                    print(f"Taking the {i}-element - {each_word}")
-                    # making a word
-                    word_without_brackets = each_word.replace('[', '').replace(']', '')
-                    gap_index = each_word.index('[')
-                    word_command = f"""INSERT INTO words (word, gap_index) 
-                            VALUES ('{word_without_brackets}', {gap_index});"""
-                    print(f"Command to be used:\n{word_command}")
-
-                    cursor.execute(word_command)
-                    print(cursor)
-                    connection.commit()
-                    print('Connection committed')
-
-                    # making a relation between word and set
-                    # ...
-                    cursor.execute(f"""SELECT id FROM words
-                    WHERE word = '{word_without_brackets}';""")
-                    word_id = cursor.fetchone()
-                    print('word_id: ', word_id[0])
-
-                    relation_command = f"""INSERT INTO rel_words_sets (word_id, set_id) 
-                    VALUES ({word_id[0]}, {record_id[0]});"""
-                    print(f"Command to be used:\n{relation_command}")
-
-                    cursor.execute(relation_command)
-                    print(cursor)
-                    connection.commit()
-                    print('Connection committed')
-
-                print(i, " lines were successfully added")
-
-
-
-            finally:
-                print(f"File {self.set_file_name} closed")
-                f.close()
-
-        except psycopg2.errors.UniqueViolation:
-            print("""Value is already exist.\n
-            Check up input values""")
+            return conn, cur
 
         except (Exception, Error) as error:
             print("Error working with PostgreSQL", error)
 
         finally:
-            # print('finally')
-            # if connection:
-            cursor.close()
-            connection.close()
-            print("Connection to PostgreSQL closed")
+            print('Finally block of def connect()')
 
+    def create(self):
+        db = self.connect()
+        connection = db[0]
+        cursor = db[1]
 
+        set_file_name = self.choose_word_set_to_add()
+        set_status = self.choose_set_status()
+        set_name = self.choose_word_set_name()
 
+        # adding word_set to database
+        cursor.execute(f"""INSERT INTO word_sets (set_file_name, set_status, set_name) 
+                        VALUES (
+                        '{set_file_name}', 
+                        '{set_status}', 
+                        '{set_name}');""")
+        connection.commit()
 
+        # getting data from database
+        cursor.execute(f"""SELECT id FROM word_sets 
+                        WHERE set_file_name = '{set_file_name}';""")
+        record_id = cursor.fetchone()
+
+        # working with file
+        with open('/Users/iggnatov/Documents/dev/grammar_bot/word_sets/' + set_file_name, 'r') as f:
+            print(f"File \'{set_file_name}\' opened")
+
+            # reading words from file
+            word_list = f.readlines()
+            word_list = [s_word.strip() for s_word in word_list]
+
+            i = 0
+            for each_word in word_list[0:]:
+                i += 1
+                # making a word
+                word_without_brackets = each_word.replace('[', '').replace(']', '')
+                gap_index = each_word.index('[')
+
+                # adding word
+                cursor.execute(f"""INSERT INTO words (word, gap_index) 
+                                VALUES ('{word_without_brackets}', {gap_index});""")
+                connection.commit()
+
+                # getting id of added word
+                cursor.execute(f"""SELECT id FROM words
+                                WHERE word = '{word_without_brackets}';""")
+                word_id = cursor.fetchone()
+
+                # making a relation between word and set
+                cursor.execute(f"""INSERT INTO rel_words_sets (word_id, set_id) 
+                                VALUES ({word_id[0]}, {record_id[0]});""")
+                connection.commit()
+        print(i, ' words were added to database')
+        cursor.close()
+        connection.close()
+        print("Connection to PostgreSQL closed")
+
+    def remove(self):
+        db = self.connect()
+        connection = db[0]
+        cursor = db[1]
+
+        # printing existing word sets
+        print('All word_sets:')
+        cursor.execute(f"""SELECT * FROM word_sets;""")
+        word_sets = cursor.fetchall()
+        for each_word_set in word_sets:
+            print(each_word_set[1])
+
+        # SELECT * FROM word_sets WHERE set_name = 'T';
+        # id | set_name | set_status | set_file_name
+
+        # input word set to remove
+        word_set_to_remove = input('Type a word_set to remove from database\n')
+
+        # set id is
+        # SELECT id FROM word_sets WHERE set_name = 'T';
+        cursor.execute(f"""SELECT id FROM word_sets WHERE set_name = '{word_set_to_remove}';""")
+        word_set_id = cursor.fetchone()[0]
+
+        # выгрузить все слова из этого набора слов
+        # SELECT * FROM rel_words_sets WHERE set_id = 24;
+        # или
+        # выгрузить id всех слов этого наора слов
+        # SELECT words.id FROM words
+        # JOIN rel_words_sets
+        # ON words.id = rel_words_sets.word_id
+        # AND rel_words_sets.set_id = 24;
+        cursor.execute(f"""SELECT words.id FROM words 
+        JOIN rel_words_sets
+        ON words.id = rel_words_sets.word_id
+        AND rel_words_sets.set_id = {word_set_id};""")
+        words_id = []
+        words_ids = cursor.fetchall()
+        for each_id in words_ids:
+            words_id.append(each_id[0])
+        print(words_id)
+
+        # для каждого слова (words.id)
+        i = 0
+        for each_word_id in words_id:
+
+            cursor.execute(f"""SELECT set_id FROM rel_words_sets WHERE word_id = {each_word_id};""")
+            quantity_of_sets = len(cursor.fetchall())
+
+            # если слово соержится в 1 наборе
+            # SELECT set_id FROM rel_words_sets WHERE word_id = 78;
+            if quantity_of_sets == 1:
+                i += 1
+                print(i)
+                # - удалить отношение из таблицы отношений
+                # DELETE FROM rel_words_sets WHERE word_id = 77;
+                cursor.execute(f"""DELETE FROM rel_words_sets WHERE word_id = {each_word_id};""")
+                connection.commit()
+                # - b удалить слово из таблицы слова
+                # DELETE FROM words WHERE words.id = 77;
+                cursor.execute(f"""DELETE FROM words WHERE words.id = {each_word_id};""")
+                connection.commit()
+
+            # если слово содержится в 2 наборах
+            else:
+                print(0)
+                # - то удалить только соотношение в таблице отношений
+                # DELETE FROM rel_words_sets WHERE word_id = 78 AND set_id = 24;
+                cursor.execute(f"""DELETE FROM rel_words_sets 
+                WHERE word_id = {each_word_id} AND set_id = {word_set_id};""")
+                connection.commit()
+
+        # удалить набор слов из таблицы наборов слов
+        # DELETE FROM word_sets WHERE set_name = 'X';
+        cursor.execute(f"""DELETE FROM word_sets WHERE word_sets.id = {word_set_id};""")
+        connection.commit()
+        print('Word_set deleted successfully')
+        print(i, ' words were removed')
+        cursor.close()
+        connection.close()
+        print("Connection to PostgreSQL closed")

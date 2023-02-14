@@ -36,7 +36,7 @@ class Word:
         if self.word.index(']') - self.word.index('[') == 1:
             gap_type = 'no_gap'
         else:
-            gap_type = 'gap'
+            gap_type = 'is_gap'
         return gap_type
 
     def get_word_full_command(self):
