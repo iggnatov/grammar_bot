@@ -1,5 +1,5 @@
 import psycopg2
-from psycopg2 import Error, errors
+from psycopg2 import Error
 import os
 import json
 
@@ -53,7 +53,7 @@ class WordSet:
         # connecting to database
         try:
             conn = psycopg2.connect(user=j_data['user'], password=j_data['password'],
-                                          host=j_data['host'], port='5433', database=j_data['dbname'])
+                                    host=j_data['host'], port='5433', database=j_data['dbname'])
             cur = conn.cursor()
 
             cur.execute("SELECT version();")
@@ -67,6 +67,18 @@ class WordSet:
 
         finally:
             print('Finally block of def connect()')
+
+    def show(self):
+        db = self.connect()
+        connection = db[0]
+        cursor = db[1]
+
+        # printing existing word sets
+        print('All word_sets:')
+        cursor.execute(f"""SELECT * FROM word_sets;""")
+        word_sets = cursor.fetchall()
+        for each_word_set in word_sets:
+            print(each_word_set[1])
 
     def create(self):
         db = self.connect()
@@ -221,3 +233,4 @@ class WordSet:
         cursor.close()
         connection.close()
         print("Connection to PostgreSQL closed")
+
