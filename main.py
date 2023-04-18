@@ -112,7 +112,7 @@ def chat_listen(vk_session):
                 # save to database ?user_nick? & user_id
 
             elif text == 'Правила':
-                print('Some rules')
+                print(f'{user_id} requests rules.')
                 write_msg(user_id, get_bot_messages('rules_message'), get_default_keyboard())
                 # и стоп тренировка?
 

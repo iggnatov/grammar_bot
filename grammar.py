@@ -258,7 +258,6 @@ class DB:
         print(i, ' words were removed.')
 
 
-
     # Смена статуса набора слов
     def change_word_set_status(self):
         pass
