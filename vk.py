@@ -7,30 +7,7 @@ from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 import psycopg2
 from psycopg2 import Error
 
-# def connect():
-#     # getting connection configs
-#     db_config_path = '/Users/iggnatov/Documents/dev/grammar_bot/sql_setting_files/config_file.txt'
-#     with open(db_config_path, 'r') as db_json_file:
-#         db_j_data = json.load(db_json_file)
-#
-#     # connecting to database
-#     try:
-#         conn = psycopg2.connect(user=db_j_data['user'], password=db_j_data['password'],
-#                                 host=db_j_data['host'], port='5433', database=db_j_data['dbname'])
-#         cur = conn.cursor()
-#
-#         cur.execute("SELECT version();")
-#         record = cur.fetchone()
-#         print("You\'re connected to - ", record, "\n")
-#
-#         return conn, cur
-#
-#     except (Exception, Error) as error:
-#         print("Error working with PostgreSQL", error)
-#
-#     finally:
-#
-#         print('Finally block of def connect()')
+
 
 def get_topics_list_from_db():
     # getting connection configs
@@ -197,7 +174,7 @@ for event in VkLongPoll(vk_session).listen():
         elif text == 'Правила':
             print('Some rules')
             write_msg(user_id, bot_messages['rules_message'], get_default_keyboard())
-            # и стоп тренировка
+            # и стоп тренировка?
 
         elif text == 'Тренировка':
             print('Practice')
@@ -205,16 +182,6 @@ for event in VkLongPoll(vk_session).listen():
             write_msg(user_id, bot_messages['choose_the_topic_message'], get_topics_keyboard(topic_buttons))
 
         elif text in topic_buttons:
-            # get word_sets.id
-            # for example 42 - История
-            word_set_id = 42
-
-            # get list of words
-            #  request
-            # req = f"""SELECT word, gap_index FROM words
-            # JOIN rel_words_sets
-            # ON words.id = rel_words_sets.id
-            # AND rel_words_sets.set_id = {word_set_id};"""
             result = check(get_words_from_set(text))
             res = result[0]
             attempt_result_msg = f'Твой результат: {res} правильных слов, за {result[1]} секунд!\n\n'
