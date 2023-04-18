@@ -1,7 +1,6 @@
 import grammar
 
 def console_admin_db():
-    word_set = grammar.DB()
     while True:
         us = input('Menu: \n'
                     'Type \'S\' to show all word sets\n'
@@ -10,8 +9,8 @@ def console_admin_db():
                     'Type \'Q\' to quit\n')
 
         if us == 'S':
-            word_set.show_words_in_set()
-
+            print(1)
+            word_set.show_word_set()
         elif us == 'A':
             word_set.create_word_set()
 
@@ -26,7 +25,6 @@ def console_admin_db():
             continue
 
 
-if __name__ == '__admin__':
+if __name__ == '__main__':
+    word_set = grammar.DB()
     console_admin_db()
-
-console_admin_db()

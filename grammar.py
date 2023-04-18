@@ -77,6 +77,7 @@ class DB:
 
     # Вывод имеющихся наборов слов
     def show_word_set(self):
+        print(2)
         db = self.connect()
         connection = db[0]
         cursor = db[1]
@@ -91,16 +92,7 @@ class DB:
             print(each_word_set[1])
 
         self.close_connection(cursor, connection)
-        # cursor.close()
-        # connection.close()
         print(f"{i} word_sets were shown")
-
-        cursor.execute(f"""SELECT * FROM word_sets;""")
-        word_sets = cursor.fetchall()
-        i = 0
-        for each_word_set in word_sets:
-            i += 1
-            print(each_word_set[1])
 
 
     # Вывод слов в наборе
@@ -180,10 +172,9 @@ class DB:
                                     VALUES ({word_id[0]}, {record_id[0]});""")
                     connection.commit()
 
+        self.close_connection(cursor, connection)
         print(i, ' words were added to database.')
-        cursor.close()
-        connection.close()
-        print("Connection to PostgreSQL closed.")
+
 
 
     # Удаление набора слов
@@ -262,11 +253,10 @@ class DB:
         # DELETE FROM word_sets WHERE set_name = 'X';
         cursor.execute(f"""DELETE FROM word_sets WHERE word_sets.id = {word_set_id};""")
         connection.commit()
+        self.close_connection(cursor, connection)
         print('Word_set deleted successfully.')
         print(i, ' words were removed.')
-        cursor.close()
-        connection.close()
-        print("Connection to PostgreSQL closed.")
+
 
 
     # Смена статуса набора слов
@@ -290,9 +280,7 @@ class DB:
         cursor.execute(f"""SELECT set_name FROM word_sets WHERE set_status = 'ACTIVE';""")
 
         db_topic_list = cursor.fetchall()
-        cursor.close()
-        connection.close()
-        print("Connection to PostgreSQL closed.")
+        self.close_connection(cursor, connection)
 
         topic_list = []
         for each_topic in db_topic_list:
@@ -319,9 +307,7 @@ class DB:
 
         word_list = cursor.fetchall()
         word_dict = {}
-        cursor.close()
-        connection.close()
-        print("Connection to PostgreSQL closed")
+        self.close_connection(cursor, connection)
 
         for elem in word_list:
             word_dict[elem[0]] = elem[1]

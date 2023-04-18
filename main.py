@@ -146,6 +146,7 @@ def chat_listen(vk_session):
             else:
                 pass
 
+
 if __name__ == '__main__':
     db = grammar.DB()
 
