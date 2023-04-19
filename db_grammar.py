@@ -5,8 +5,9 @@ from psycopg2 import Error
 
 class DB:
     # --- Подключение к базе данных --- #
+    # Установление соединения
     @staticmethod
-    def connect():
+    def get_connection():
         # getting connection configs
         # global conn, cur
         config_path = '/Users/iggnatov/Documents/dev/grammar_bot/sql_setting_files/config_file.txt'
@@ -32,6 +33,8 @@ class DB:
             print('Finally, connection is stable')
             return conn, cur
 
+
+    # Разрыв соединения
     @staticmethod
     def close_connection(cu, co):
         cu.close()
@@ -78,7 +81,7 @@ class DB:
     # Вывод имеющихся наборов слов
     def show_word_set(self):
         print(2)
-        db = self.connect()
+        db = self.get_connection()
         connection = db[0]
         cursor = db[1]
 
@@ -105,7 +108,7 @@ class DB:
 
     # Добавление набора слов
     def create_word_set(self):
-        db = self.connect()
+        db = self.get_connection()
         connection = db[0]
         cursor = db[1]
 
@@ -179,7 +182,7 @@ class DB:
 
     # Удаление набора слов
     def remove_word_set(self):
-        db = self.connect()
+        db = self.get_connection()
         connection = db[0]
         cursor = db[1]
 
@@ -272,7 +275,7 @@ class DB:
 
     # Вывод активных наборов / тем
     def get_topic_list_from_db(self):
-        db = self.connect()
+        db = self.get_connection()
         connection = db[0]
         cursor = db[1]
 
@@ -291,7 +294,7 @@ class DB:
 
     # Вывод набора слов по указанной теме
     def get_words_from_set(self, set_name):
-        db = self.connect()
+        db = self.get_connection()
         connection = db[0]
         cursor = db[1]
 
