@@ -20,7 +20,7 @@ KEYBOARD_START_PRACTICE = (
 
 # Получаем клавиатуру, состоящую из тем, имеющих статус ACTIVE
 db = DB()
-topic_list = db.get_topic_list_from_db()
+topic_list = db.get_active_topic_list_from_db()
 def get_topic_keyboard(t_list, key_board):
     btn_in_row = 0
     for btn in t_list:

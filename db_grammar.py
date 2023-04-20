@@ -274,7 +274,7 @@ class DB:
     # Проверка на уже записанный ник
 
     # Вывод активных наборов / тем
-    def get_topic_list_from_db(self):
+    def get_active_topic_list_from_db(self):
         db = self.get_connection()
         connection = db[0]
         cursor = db[1]
@@ -302,19 +302,21 @@ class DB:
         word_set_id = cursor.fetchone()[0]
 
         # get words
-        cursor.execute(f"""SELECT word, gap_index FROM words
-                        JOIN rel_words_sets
-                        ON words.id = rel_words_sets.id
-                        AND rel_words_sets.set_id = {word_set_id};""")
+        cursor.execute(f"""
+        SELECT words.id, word, gap_index FROM words
+        JOIN rel_words_sets
+        ON words.id = rel_words_sets.id
+        AND rel_words_sets.set_id = {word_set_id};""")
 
         word_list = cursor.fetchall()
-        word_dict = {}
-        self.close_connection(cursor, connection)
 
-        for elem in word_list:
-            word_dict[elem[0]] = elem[1]
-        print('Word_dict was returned')
-        return word_dict
+        self.close_connection(cursor, connection)
+        # word_dict = {}
+        # for elem in word_list:
+        #     word_dict[elem[0]] = elem[1]
+        # print('Word_dict was returned.')
+        print(f'Word_list \'{set_name}\' was returned.')
+        return word_list
 
     # Запись результатов тренировки
 
