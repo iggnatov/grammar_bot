@@ -51,3 +51,13 @@ class Practice:
     def get_practice_score(self):
         print(self.wrong_answers)
         return 16 - len(self.wrong_answers)
+
+
+    # Из списка кортежей делаем список вторых элементов каждого кортежа
+    @staticmethod
+    def make_topic_list(db_array):
+        topic_list = []
+        for elem in db_array:
+            topic = elem[1]
+            topic_list.append(topic)
+        return topic_list

@@ -265,9 +265,40 @@ class DB:
     # --- Работа с тренировками --- #
 
     # Запись user_id
+    def add_user(self, user_id):
+        db = self.get_connection()
+        connection = db[0]
+        cursor = db[1]
+
+        try:
+            cursor.execute(f"""INSERT INTO users (vk_id) VALUES ({user_id})""")
+            connection.commit()
+            print(f'User {user_id} was added.')
+
+        except (Exception, Error) as error:
+            print("Error working with PostgreSQL", error)
+
+        finally:
+            self.close_connection(cursor, connection)
+
 
     # Запись user_nick
     # Проверка на уже записанный ник
+    def set_user_nick(self, user_nick, user_id):
+        db = self.get_connection()
+        connection = db[0]
+        cursor = db[1]
+
+        try:
+            cursor.execute(f"""UPDATE users SET nick = {user_nick} WHERE vk_id = {user_id};""")
+            connection.commit()
+            print(f'User {user_id} was updated with user_nick {user_nick}.')
+
+        except (Exception, Error) as error:
+            print("Error working with PostgreSQL", error)
+
+        finally:
+            self.close_connection(cursor, connection)
 
     # Вывод активных наборов / тем
     def get_active_topic_list_from_db(self):
@@ -288,6 +319,27 @@ class DB:
 
         self.close_connection(cursor, connection)
         return topic_list
+
+
+    def get_active_topic_array_from_db(self):
+        db = self.get_connection()
+        connection = db[0]
+        cursor = db[1]
+
+        cursor.execute(f"""SELECT word_sets.id, set_name FROM word_sets WHERE set_status = 'ACTIVE';""")
+
+        db_topic_array = cursor.fetchall()
+
+        # topic_list = []
+        # for each_topic in db_topic_list:
+        #     topic = each_topic[0]
+        #     topic_list.append(topic)
+
+        print(f'List of active word_sets was executed. {db_topic_array}')
+
+        self.close_connection(cursor, connection)
+        return db_topic_array
+
 
     # Вывод набора слов по указанной теме
     def get_words_from_set(self, set_name):
@@ -328,9 +380,33 @@ class DB:
 
 
 
-    # Запись результатов тренировки
+    # Запись результатов тренировки и ошибок
+    def add_train_results(self, set_id, user_id, practice_time, score, wrong_answers):
+        db = self.get_connection()
+        connection = db[0]
+        cursor = db[1]
 
-    # Запись в таблицу ошибки (word_id / train_id / user_id
+        # date will be added by default by PostgresQL as CURRENT_DATE
+        cursor.execute(f"""INSERT INTO trains (set_id, user_id, practice_time, practice_score) 
+        VALUES ('{set_id}','{user_id}','{practice_time}','{score}');""")
+        connection.commit()
+
+        cursor.execute(f"""SELECT trains.id FROM trains ORDER BY created_at  DESC LIMIT 1;""")
+        last_train_id = cursor.fetchone()[0]
+        print('last_train_id', last_train_id)
+
+        # Запись в таблицу ошибки (word_id / train_id / user_id / wrong_letter
+        if len(wrong_answers) > 0:
+            for elem in wrong_answers:
+                cursor.execute(f"""INSERT INTO mistakes (train_id, user_id, word_id, wrong_letter) 
+                                VALUES ('{last_train_id}','{user_id}','{elem[0]}','{elem[1]}');""")
+                connection.commit()
+                print(f'Mistake was added. \n'
+                      f'train_id: {last_train_id}, user_id: {user_id}, word_id: {elem[0]}, wrong_letter: {elem[1]}')
+
+        self.close_connection(cursor, connection)
+        print(f'New practice result was added. \n'
+              f'set_id: {set_id}, user_id: {user_id}, time: {practice_time}, score: {score}')
 
 
     # --- Функции администратора --- #
