@@ -17,7 +17,7 @@ class Practice:
         return time.perf_counter()
 
 
-    # Обработка слова из БД для Тренировки
+    # --- Обработка слова из БД для Тренировки --- #
 
     # Вспомогательная функция для обработки слов
     @staticmethod
@@ -26,8 +26,7 @@ class Practice:
         word_with_gap = word[:index] + '_' + word[index + 1:]
         return word_with_gap, correct_letter.lower()
 
-    # Формирования списка Тапплов (of tupples)
-    # Структура - [('АБСОЛЮТИЗМ', 3), ('АРАПНИК', 0)]
+    # Формирования списка Кортежей - [('АБСОЛЮТИЗМ', 3), ('АРАПНИК', 0)]
     def make_words_to_practise(self, words_from_db):
         words_to_practice = []
         for elem in words_from_db:
@@ -37,6 +36,7 @@ class Practice:
             words_to_practice.append(my_tuple)
         return words_to_practice
 
+
     # Проверка ответа и запись неверного ответа в список wrong_answers
     @staticmethod
     def check_answer(correct_letter, answer_letter):
@@ -44,13 +44,6 @@ class Practice:
             return 1
         else:
             return 0
-
-
-
-    # Получение и запись общего счета тренировки (practice_score)
-    def get_practice_score(self):
-        print(self.wrong_answers)
-        return 16 - len(self.wrong_answers)
 
 
     # Из списка кортежей делаем список вторых элементов каждого кортежа

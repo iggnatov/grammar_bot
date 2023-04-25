@@ -1,29 +1,29 @@
-import os, sys, time, datetime
-from typing import Union
+import sys, time
 from vkbottle.bot import Bot, Message
 from vkbottle import BaseStateGroup
 # from vkbottle.dispatch.rules import ABCRule
-from vkbottle import GroupEventType, GroupTypes, Keyboard, Text, VKAPIError
+# from vkbottle import GroupEventType, GroupTypes, Keyboard, Text, VKAPIError
 from loguru import logger
 from config import api, state_dispenser, labeler
 from handlers import labelers
 from generate_keyboard import KBoard
-# from handlers.practice import Practice
 from db_grammar import DB
 from handlers.practice import Practice
 from vkbottle import CtxStorage
-
 
 
 # Logging (loguru) settings
 logger.remove()
 logger.add(sys.stderr, level='INFO')
 
+
 # Создаем экземпляр класса для работы БД
 db = DB()
 
+
 # Создаем экземпляр класса для Тренировки
 practice = Practice()
+
 
 # Создаем бота
 bot = Bot(
@@ -32,11 +32,22 @@ bot = Bot(
     state_dispenser=state_dispenser
 )
 
+
+# Loading handlers to global labeler
+for labeler in labelers:
+    bot.labeler.load(labeler)
+
+
+# Создаем экземпляр класса для хранилища
+ctx_storage = CtxStorage()
+
+
 class MenuState(BaseStateGroup):
     START_MENU = 'start'
     RULES = 'rules'
     START_PRACTICE = 'start_practice'
     PRACTICE = 'practise'
+
 
 class PracticeState(BaseStateGroup):
     Q0 = 0
@@ -56,12 +67,6 @@ class PracticeState(BaseStateGroup):
     Q14 = 14
     Q15 = 15
     QR = 'qr'
-
-ctx_storage = CtxStorage()
-
-# Loading handlers to global labeler
-for labeler in labelers:
-    bot.labeler.load(labeler)
 
 
 # Test handler
@@ -444,7 +449,7 @@ async def practice_handler(message: Message):
     topic_id = ctx_storage.get('topic')[0]
     user_id = ctx_storage.get('user_id')
     db.add_train_results(topic_id, user_id, practice_time, practice_result, wrong_answers)
- 
+
 
     # Удаление данных в хранилище
     ctx_storage.delete('practice_words')
