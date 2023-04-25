@@ -296,8 +296,6 @@ class DB:
         cursor = db[1]
 
         cursor.execute(f"""SELECT word_sets.id FROM word_sets WHERE set_name = '{set_name}';""")
-        # print('fetchall = ', cursor.fetchall())
-        # print('fetchone = ', cursor.fetchone())
         word_set_id = cursor.fetchone()[0]
 
         # get words
@@ -316,6 +314,19 @@ class DB:
         # print('Word_dict was returned.')
         print(f'Word_list \'{set_name}\' was returned.')
         return word_list
+
+    # Получение id указанного набора слов
+    def get_word_set_id(self, set_name):
+        db = self.get_connection()
+        connection = db[0]
+        cursor = db[1]
+        cursor.execute(f"""SELECT word_sets.id FROM word_sets WHERE set_name = '{set_name}';""")
+        word_set_id = cursor.fetchone()[0]
+        self.close_connection(cursor, connection)
+        print(f'Word_set.id {word_set_id} was returned.')
+        return word_set_id
+
+
 
     # Запись результатов тренировки
 

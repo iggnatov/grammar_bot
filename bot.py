@@ -86,7 +86,8 @@ async def chose_topic_handler(message: Message):
 @labeler.private_message(state=MenuState.START_PRACTICE, text=db.get_active_topic_list_from_db())
 async def pre_start_practice_handler(message: Message):
     await message.answer(f'Вы выбрали тему {message.text}. Начать тренировку?', keyboard=KBoard.KEYBOARD_START_PRACTICE)
-    ctx_storage.set('topic', message.text)
+    topic_id = db.get_word_set_id(message.text)
+    ctx_storage.set('topic', (topic_id, message.text))
     print('ctx topic', ctx_storage.get('topic'))
 
 
@@ -94,7 +95,7 @@ async def pre_start_practice_handler(message: Message):
 async def start_practice_handler(message: Message):
     await bot.state_dispenser.set(message.peer_id, PracticeState.Q0)
     print('started')
-    words_from_db = db.get_words_from_set(ctx_storage.get('topic'))
+    words_from_db = db.get_words_from_set(ctx_storage.get('topic')[1])
     print('words_from_db', words_from_db)
     practice_words = practice.make_words_to_practise(words_from_db)
     ctx_storage.set('practice_words', practice_words)
@@ -401,6 +402,14 @@ async def practice_handler(message: Message):
     user_answers = ctx_storage.get('user_answers')
     for elem in user_answers:
         practice_result += elem[2]
+
+    # Удаление данных в хранилище
+    ctx_storage.delete('practice_words')
+    ctx_storage.delete('user_answers')
+    ctx_storage.delete('time_start')
+    ctx_storage.delete('time_stop')
+    ctx_storage.delete('topic')
+    print('ctx_storage was deleted.')
 
     await message.answer(f'Вы завершили тренировку.\nВаш результат: {practice_result} из 16 за {practice_time} секунд!')
     await bot.state_dispenser.set(message.peer_id, MenuState.START_MENU)
