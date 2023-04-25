@@ -1,32 +1,20 @@
 import time
 from vkbottle.bot import Bot, BotLabeler, Message, rules
 
-from generate_keyboard import KEYBOARD_DEFAULT, KEYBOARD_TOPICS, KEYBOARD_START_PRACTICE
+# from generate_keyboard import KEYBOARD_DEFAULT, KEYBOARD_TOPICS, KEYBOARD_START_PRACTICE
 
 labeler = BotLabeler()
 
 class Practice:
-    words_from_db = [] # структура - [('АБСОЛЮТИЗМ', 3), ('АРАПНИК', 0)]
-    words_to_practise = []
-    wrong_answers = []
-    practice_score = 0
-    practice_time_start = 0
-    practice_time_finish = 0
-
-    def __init__(self):
-        self.wrong_answers = []
 
     # Подсчет времени тренировки
-    def start_timer(self):
-        self.practice_time_start = time.perf_counter()
+    @staticmethod
+    def start_timer():
+        return time.perf_counter()
 
-
-    def stop_timer(self):
-        self.practice_time_finish = time.perf_counter()
-
-
-    def get_practice_time(self):
-        return round(self.practice_time_finish - self.practice_time_start, 2)
+    @staticmethod
+    def stop_timer():
+        return time.perf_counter()
 
 
     # Обработка слова из БД для Тренировки
@@ -40,18 +28,23 @@ class Practice:
 
     # Формирования списка Тапплов (of tupples)
     # Структура - [('АБСОЛЮТИЗМ', 3), ('АРАПНИК', 0)]
-    def make_words_to_practise(self):
-        self.words_to_practise = []
-        for elem in self.words_from_db:
-            my_tuple = (elem[0], self.erase_letters(elem[1], elem[2])[0], self.erase_letters(elem[1], elem[2])[1])
-            self.words_to_practise.append(my_tuple)
-
+    def make_words_to_practise(self, words_from_db):
+        words_to_practice = []
+        for elem in words_from_db:
+            word_with_gap = self.erase_letters(elem[1], elem[2])[0]
+            correct_letter = self.erase_letters(elem[1], elem[2])[1]
+            my_tuple = (elem[0], word_with_gap, correct_letter)
+            words_to_practice.append(my_tuple)
+        return words_to_practice
 
     # Проверка ответа и запись неверного ответа в список wrong_answers
-    def check_answer(self, user_id, word_index, answer_letter):
-        if answer_letter.lower() != self.words_to_practise[word_index][2]:
-            my_tuple = (self.words_to_practise[word_index][0], user_id, answer_letter)
-            self.wrong_answers.append(my_tuple)
+    @staticmethod
+    def check_answer(correct_letter, answer_letter):
+        if answer_letter.lower() == correct_letter:
+            return 1
+        else:
+            return 0
+
 
 
     # Получение и запись общего счета тренировки (practice_score)

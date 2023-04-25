@@ -22,16 +22,12 @@ class DB:
 
             cur.execute("SELECT version();")
             record = cur.fetchone()
-            print("You\'re connected to - ", record, "\n")
-
+            print("You\'re connected to - ", record)
+            return conn, cur
 
 
         except (Exception, Error) as error:
             print("Error working with PostgreSQL", error)
-
-        finally:
-            print('Finally, connection is stable')
-            return conn, cur
 
 
     # Разрыв соединения
@@ -288,7 +284,8 @@ class DB:
             topic = each_topic[0]
             topic_list.append(topic)
 
-        print('List of active word_sets was executed.')
+        print(f'List of active word_sets was executed. {topic_list}')
+
         self.close_connection(cursor, connection)
         return topic_list
 
@@ -299,6 +296,8 @@ class DB:
         cursor = db[1]
 
         cursor.execute(f"""SELECT word_sets.id FROM word_sets WHERE set_name = '{set_name}';""")
+        # print('fetchall = ', cursor.fetchall())
+        # print('fetchone = ', cursor.fetchone())
         word_set_id = cursor.fetchone()[0]
 
         # get words
