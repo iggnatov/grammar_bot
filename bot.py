@@ -69,7 +69,7 @@ class PracticeState(BaseStateGroup):
     QR = 'qr'
 
 
-# Test handler
+
 @labeler.private_message(text='Начать')
 async def hello_handler(message: Message):
     users_info = await bot.api.users.get(message.from_id)
@@ -87,11 +87,6 @@ async def bot_rules_handler(message: Message):
 
 @labeler.private_message(state=MenuState.START_MENU, payload={'cmd': 'practice'}, text='Тренировка')
 async def chose_topic_handler(message: Message):
-    # ta = db.get_active_topic_array_from_db()
-    # tl = practice.make_topic_list(ta)
-    # ctx_storage.set('tl', tl)
-    # print('ctx tl', ctx_storage.get('tl'))
-    # print(db.get_active_topic_list_from_db())
     await message.answer('Выбери тему:', keyboard=KBoard.get_topic_keyboard(db.get_active_topic_list_from_db()))
     await bot.state_dispenser.set(message.peer_id, MenuState.START_PRACTICE)
 
@@ -106,18 +101,30 @@ async def pre_start_practice_handler(message: Message):
 
 @labeler.private_message(state=MenuState.START_PRACTICE, payload={'cmd': 'start_practice'}, text='Старт')
 async def start_practice_handler(message: Message):
+
     await bot.state_dispenser.set(message.peer_id, PracticeState.Q0)
+
     print('Practice started')
     words_from_db = db.get_words_from_set(ctx_storage.get('topic')[1])
-    # print('words_from_db', words_from_db)
     practice_words = practice.make_words_to_practise(words_from_db)
     ctx_storage.set('practice_words', practice_words)
-    # print('ctx_storage practice_words: ', ctx_storage.get('practice_words'))
-
 
     await message.answer(ctx_storage.get('practice_words')[0][1])
 
     ctx_storage.set('time_start', practice.start_timer())
+
+
+@labeler.private_message(command='q')
+async def stop_handler(message: Message):
+    await message.answer('Тренировка завершена, возвращаюсь в главное меню.', keyboard=KBoard.KEYBOARD_DEFAULT)
+    await bot.state_dispenser.set(message.peer_id, MenuState.START_MENU)
+
+
+# Test handler
+@labeler.private_message(command='t')
+async def stop_handler(message: Message):
+    await message.answer('test\n')
+
 
 
 @labeler.private_message(state=PracticeState.Q0)
@@ -130,6 +137,8 @@ async def practice_handler(message: Message):
     attempt = quiz_word_id, user_answer, attempt_result
     user_answers = [attempt]
     ctx_storage.set('user_answers', user_answers)
+
+
     print('ctx_ practice_words', ctx_storage.get('practice_words')[0])
     print('ctx user_answers', ctx_storage.get('user_answers')[0])
 
@@ -448,6 +457,9 @@ async def practice_handler(message: Message):
     # Запись результатов в базу данных
     topic_id = ctx_storage.get('topic')[0]
     user_id = ctx_storage.get('user_id')
+    if user_id is None:
+        users_info = await bot.api.users.get(message.from_id)
+        user_id = users_info[0].id
     db.add_train_results(topic_id, user_id, practice_time, practice_result, wrong_answers)
 
 
@@ -478,10 +490,7 @@ async def back_to_start_menu_handler(message: Message):
     await bot.state_dispenser.set(message.peer_id, MenuState.START_MENU)
 
 
-@labeler.private_message(state=MenuState.PRACTICE, command='q')
-async def stop_handler(message: Message):
-    await message.answer('Тренировка завершена, возвращаюсь в главное меню.', keyboard=KBoard.KEYBOARD_DEFAULT)
-    await bot.state_dispenser.set(message.peer_id, MenuState.START_MENU)
+
 
 
 # Running Bot
