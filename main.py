@@ -1,154 +1,499 @@
-import grammar
-import json
-import time
-import vk_api
-from vk_api.longpoll import VkLongPoll, VkEventType
-from vk_api.keyboard import VkKeyboard, VkKeyboardColor
-from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
-
-def vk_connect():
-    config_path = '/Users/iggnatov/Documents/dev/grammar_bot/vk_setting_files/config_file.txt'
-    with open(config_path, 'r') as json_file:
-        j_data = json.load(json_file)
-
-    vk_session = vk_api.VkApi(token=j_data['token'])
-    return vk_session
-
-def get_default_keyboard():
-    default_buttons = ['Правила', 'Тренировка']
-    default_keyboard = VkKeyboard(one_time=True)
-    default_keyboard.add_button(default_buttons[0], VkKeyboardColor.PRIMARY)
-    default_keyboard.add_button(default_buttons[1], VkKeyboardColor.PRIMARY)
-    return default_keyboard
-
-def get_topics_keyboard(topics_list):
-    topic_keyboard = VkKeyboard(inline=True)
-    btn_in_row = 0
-    for btn in topics_list:
-        print(btn)
-        if btn_in_row < 2:
-            topic_keyboard.add_button(btn, VkKeyboardColor.PRIMARY)
-            btn_in_row += 1
-        else:
-            topic_keyboard.add_line()
-            topic_keyboard.add_button(btn, VkKeyboardColor.PRIMARY)
-            btn_in_row = 1
-    return topic_keyboard
-
-def write_msg(user_id_, message, keyboard_=None):
-    msg = {
-        'user_id': user_id_,
-        'message': message,
-        'random_id': 0
-    }
-
-    if keyboard_ is not None:
-        msg['keyboard'] = keyboard_.get_keyboard()
-
-    session.method('messages.send', msg)
-
-def get_bot_messages(case):
-    bot_messages_path = '/Users/iggnatov/Documents/dev/grammar_bot/vk_setting_files/messages.json'
-    with open(bot_messages_path, 'r') as json_file_bot_messages:
-        bot_messages = json.load(json_file_bot_messages)
-
-    if case == 'hello_message':
-        return bot_messages['hello_message']
-    elif case == 'rules_message':
-        return bot_messages['rules_message']
-    elif case == 'choose_the_topic_message':
-        return bot_messages['choose_the_topic_message']
-    elif case == 'result_0003_message':
-        return bot_messages['result_0003_message']
-    elif case == 'result_0406_message':
-        return bot_messages['result_0406_message']
-    elif case == 'result_0710_message':
-        return bot_messages['result_0710_message']
-    elif case == 'result_1113_message':
-        return bot_messages['result_1113_message']
-    elif case == 'result_1416_message':
-        return bot_messages['result_1416_message']
-
-# --- Тренировка --- #
-
-# Тренировка на наборе слов
-def check(user_id_, quiz_dict):
-    correct_answer = ''
-    attempt_score = 0
-    tic = time.perf_counter()
-    for word, gqp_index in quiz_dict.items():
-        quiz_tuple = erase_letter(word, gqp_index)
-        write_msg(user_id_, quiz_tuple[0])
-        for quiz_event in VkLongPoll(session).listen():
-            if quiz_event.type == VkEventType.MESSAGE_NEW and quiz_event.to_me:
-                answer = quiz_event.text.lower()
-                if answer == quiz_tuple[1].lower():
-                    correct_answer = '+'
-                    attempt_score += 1
-                else:
-                    correct_answer = '-'
-                print(answer, correct_answer)
-                break
-    toc = time.perf_counter()
-    attempt_time = round(toc - tic, 2)
-    return attempt_score, attempt_time
-
-# Подготовка набора слов (вырезание букв)
-def erase_letter(word, index):
-    correct_letter = word[index]
-    word_with_gap = word[:index] + '_' + word[index + 1:]
-    return word_with_gap, correct_letter
-
-def chat_listen(vk_session):
-    for event in VkLongPoll(vk_session).listen():
-        if event.type == VkEventType.MESSAGE_NEW and event.to_me:
-            # text = event.text.lower()
-            text = event.text
-            user_id = event.user_id
-
-            if text == 'Начать':
-                write_msg(user_id, get_bot_messages('hello_message'), get_default_keyboard())
-                print(f'user_id: {user_id}')
-                # save to database ?user_nick? & user_id
-
-            elif text == 'Правила':
-                print(f'{user_id} requests rules.')
-                write_msg(user_id, get_bot_messages('rules_message'), get_default_keyboard())
-                # и стоп тренировка?
-
-            elif text == 'Тренировка':
-                print('Practice')
-                topic_buttons = db.get_topics_list_from_db()
-                write_msg(user_id, get_bot_messages('choose_the_topic_message'), get_topics_keyboard(topic_buttons))
-
-            elif text in topic_buttons:
-                # Получить набор слов на заданную тему
-                check_list = db.get_words_from_set(text)
-
-                result = check(user_id, check_list)
-                res = result[0]
-                attempt_result_msg = f'Твой результат: {res} правильных слов, за {result[1]} секунд!\n\n'
-
-                if 0 <= res <= 3:
-                    attempt_result_msg += get_bot_messages('result_0003_message')
-                elif 4 <= res <= 6:
-                    attempt_result_msg += get_bot_messages('result_0406_message')
-                elif 7 <= res <= 10:
-                    attempt_result_msg += get_bot_messages('result_0710_message')
-                elif 11 <= res <= 13:
-                    attempt_result_msg += get_bot_messages('result_1113_message')
-                elif 14 <= res <= 16:
-                    attempt_result_msg += get_bot_messages('result_1416_message')
-
-                write_msg(user_id, attempt_result_msg, get_default_keyboard())
+import os
+import sys, time
+from vkbottle.bot import Bot, Message, BotLabeler
+from vkbottle import BaseStateGroup, CtxStorage, API, BuiltinStateDispenser
+# from vkbottle.dispatch.rules import ABCRule
+# from vkbottle import GroupEventType, GroupTypes, Keyboard, Text, VKAPIError
+from loguru import logger
+from handlers import labelers
+from generate_keyboard import KBoard
+from db_grammar import DB
+from handlers.practice import Practice
 
 
-            else:
-                pass
+# Logging (loguru) settings
+logger.remove()
+logger.add(sys.stderr, level='INFO')
 
 
+# Создаем экземпляр класса для работы БД
+db = DB()
+
+
+# Создаем экземпляр класса для Тренировки
+practice = Practice()
+
+labeler = BotLabeler()
+state_dispenser = BuiltinStateDispenser()
+
+# Создаем бота
+bot = Bot(
+    api=API(os.environ.get("VK_API")),
+    labeler=labeler,
+    state_dispenser=state_dispenser
+)
+
+
+# Loading handlers to global labeler
+for each_labeler in labelers:
+    bot.labeler.load(each_labeler)
+
+
+# Создаем экземпляр класса для хранилища
+ctx_storage = CtxStorage()
+
+
+class MenuState(BaseStateGroup):
+    START_MENU = 'start'
+    RULES = 'rules'
+    START_PRACTICE = 'start_practice'
+    PRACTICE = 'practise'
+
+
+class PracticeState(BaseStateGroup):
+    Q0 = 0
+    Q1 = 1
+    Q2 = 2
+    Q3 = 3
+    Q4 = 4
+    Q5 = 5
+    Q6 = 6
+    Q7 = 7
+    Q8 = 8
+    Q9 = 9
+    Q10 = 10
+    Q11 = 11
+    Q12 = 12
+    Q13 = 13
+    Q14 = 14
+    Q15 = 15
+    QR = 'qr'
+
+
+
+@labeler.private_message(text='Начать')
+async def hello_handler(message: Message):
+    users_info = await bot.api.users.get(message.from_id)
+    user_id = users_info[0].id
+    ctx_storage.set('user_id', user_id)
+    db.add_user(user_id)
+    await message.answer(f'Привет, {users_info[0].first_name}!', keyboard=KBoard.KEYBOARD_DEFAULT)
+    await bot.state_dispenser.set(message.peer_id, MenuState.START_MENU)
+
+
+@labeler.private_message(state=MenuState.START_MENU, payload={'cmd': 'rules'}, text='Правила')
+async def bot_rules_handler(message: Message):
+    await message.answer('Правила', keyboard=KBoard.KEYBOARD_DEFAULT)
+
+
+@labeler.private_message(state=MenuState.START_MENU, payload={'cmd': 'practice'}, text='Тренировка')
+async def chose_topic_handler(message: Message):
+    await message.answer('Выбери тему:', keyboard=KBoard.get_topic_keyboard(db.get_active_topic_list_from_db()))
+    await bot.state_dispenser.set(message.peer_id, MenuState.START_PRACTICE)
+
+
+@labeler.private_message(state=MenuState.START_PRACTICE, text=db.get_active_topic_list_from_db())
+async def pre_start_practice_handler(message: Message):
+    await message.answer(f'Вы выбрали тему {message.text}. Начать тренировку?', keyboard=KBoard.KEYBOARD_START_PRACTICE)
+    topic_id = db.get_word_set_id(message.text)
+    ctx_storage.set('topic', (topic_id, message.text))
+    # print('ctx topic', ctx_storage.get('topic'))
+
+
+@labeler.private_message(state=MenuState.START_PRACTICE, payload={'cmd': 'start_practice'}, text='Старт')
+async def start_practice_handler(message: Message):
+
+    await bot.state_dispenser.set(message.peer_id, PracticeState.Q0)
+
+    print('Practice started')
+    words_from_db = db.get_words_from_set(ctx_storage.get('topic')[1])
+    practice_words = practice.make_words_to_practise(words_from_db)
+    ctx_storage.set('practice_words', practice_words)
+
+    await message.answer(ctx_storage.get('practice_words')[0][1])
+
+    ctx_storage.set('time_start', practice.start_timer())
+
+
+@labeler.private_message(command='q')
+async def stop_handler(message: Message):
+    await message.answer('Тренировка завершена, возвращаюсь в главное меню.', keyboard=KBoard.KEYBOARD_DEFAULT)
+    await bot.state_dispenser.set(message.peer_id, MenuState.START_MENU)
+
+
+# Test handler
+@labeler.private_message(command='t')
+async def stop_handler(message: Message):
+    await message.answer('test\n')
+
+
+
+@labeler.private_message(state=PracticeState.Q0)
+async def practice_handler(message: Message):
+    user_answer = message.text
+    quiz_word_id = ctx_storage.get('practice_words')[0][0]
+    correct_answer = ctx_storage.get('practice_words')[0][2]
+    attempt_result = practice.check_answer(correct_answer, user_answer)
+
+    attempt = quiz_word_id, user_answer, attempt_result
+    user_answers = [attempt]
+    ctx_storage.set('user_answers', user_answers)
+
+
+    print('ctx_ practice_words', ctx_storage.get('practice_words')[0])
+    print('ctx user_answers', ctx_storage.get('user_answers')[0])
+
+    time.sleep(0.2)
+    await bot.state_dispenser.set(message.peer_id, PracticeState.Q1)
+    await message.answer(ctx_storage.get('practice_words')[1][1])
+
+
+
+@labeler.private_message(state=PracticeState.Q1)
+async def practice_handler(message: Message):
+    user_answer = message.text
+    quiz_word_id = ctx_storage.get('practice_words')[1][0]
+    correct_answer = ctx_storage.get('practice_words')[1][2]
+    attempt_result = practice.check_answer(correct_answer, user_answer)
+
+    attempt = quiz_word_id, user_answer, attempt_result
+    user_answers = ctx_storage.get('user_answers')
+    user_answers.append(attempt)
+    ctx_storage.set('user_answers', user_answers)
+
+    print('ctx_ practice_words', ctx_storage.get('practice_words')[1])
+    print('ctx user_answers', ctx_storage.get('user_answers')[1])
+
+    time.sleep(0.2)
+    await bot.state_dispenser.set(message.peer_id, PracticeState.Q2)
+    await message.answer(ctx_storage.get('practice_words')[2][1])
+
+
+
+@labeler.private_message(state=PracticeState.Q2)
+async def practice_handler(message: Message):
+    user_answer = message.text
+    quiz_word_id = ctx_storage.get('practice_words')[2][0]
+    correct_answer = ctx_storage.get('practice_words')[2][2]
+    attempt_result = practice.check_answer(correct_answer, user_answer)
+
+    attempt = quiz_word_id, user_answer, attempt_result
+    user_answers = ctx_storage.get('user_answers')
+    user_answers.append(attempt)
+    ctx_storage.set('user_answers', user_answers)
+
+    print('ctx_ practice_words', ctx_storage.get('practice_words')[2])
+    print('ctx user_answers', ctx_storage.get('user_answers')[2])
+
+    time.sleep(0.2)
+    await bot.state_dispenser.set(message.peer_id, PracticeState.Q3)
+    await message.answer(ctx_storage.get('practice_words')[3][1])
+
+
+@labeler.private_message(state=PracticeState.Q3)
+async def practice_handler(message: Message):
+    user_answer = message.text
+    quiz_word_id = ctx_storage.get('practice_words')[3][0]
+    correct_answer = ctx_storage.get('practice_words')[3][2]
+    attempt_result = practice.check_answer(correct_answer, user_answer)
+
+    attempt = quiz_word_id, user_answer, attempt_result
+    user_answers = ctx_storage.get('user_answers')
+    user_answers.append(attempt)
+    ctx_storage.set('user_answers', user_answers)
+
+    print('ctx_ practice_words', ctx_storage.get('practice_words')[3])
+    print('ctx user_answers', ctx_storage.get('user_answers')[3])
+
+    time.sleep(0.2)
+    await bot.state_dispenser.set(message.peer_id, PracticeState.Q4)
+    await message.answer(ctx_storage.get('practice_words')[4][1])
+
+@labeler.private_message(state=PracticeState.Q4)
+async def practice_handler(message: Message):
+    user_answer = message.text
+    quiz_word_id = ctx_storage.get('practice_words')[4][0]
+    correct_answer = ctx_storage.get('practice_words')[4][2]
+    attempt_result = practice.check_answer(correct_answer, user_answer)
+
+    attempt = quiz_word_id, user_answer, attempt_result
+    user_answers = ctx_storage.get('user_answers')
+    user_answers.append(attempt)
+    ctx_storage.set('user_answers', user_answers)
+
+    print('ctx_ practice_words', ctx_storage.get('practice_words')[4])
+    print('ctx user_answers', ctx_storage.get('user_answers')[4])
+
+    time.sleep(0.2)
+    await bot.state_dispenser.set(message.peer_id, PracticeState.Q5)
+    await message.answer(ctx_storage.get('practice_words')[5][1])
+
+@labeler.private_message(state=PracticeState.Q5)
+async def practice_handler(message: Message):
+    user_answer = message.text
+    quiz_word_id = ctx_storage.get('practice_words')[5][0]
+    correct_answer = ctx_storage.get('practice_words')[5][2]
+    attempt_result = practice.check_answer(correct_answer, user_answer)
+
+    attempt = quiz_word_id, user_answer, attempt_result
+    user_answers = ctx_storage.get('user_answers')
+    user_answers.append(attempt)
+    ctx_storage.set('user_answers', user_answers)
+
+    print('ctx_ practice_words', ctx_storage.get('practice_words')[5])
+    print('ctx user_answers', ctx_storage.get('user_answers')[5])
+
+    time.sleep(0.2)
+    await bot.state_dispenser.set(message.peer_id, PracticeState.Q6)
+    await message.answer(ctx_storage.get('practice_words')[6][1])
+
+@labeler.private_message(state=PracticeState.Q6)
+async def practice_handler(message: Message):
+    user_answer = message.text
+    quiz_word_id = ctx_storage.get('practice_words')[6][0]
+    correct_answer = ctx_storage.get('practice_words')[6][2]
+    attempt_result = practice.check_answer(correct_answer, user_answer)
+
+    attempt = quiz_word_id, user_answer, attempt_result
+    user_answers = ctx_storage.get('user_answers')
+    user_answers.append(attempt)
+    ctx_storage.set('user_answers', user_answers)
+
+    print('ctx_ practice_words', ctx_storage.get('practice_words')[6])
+    print('ctx user_answers', ctx_storage.get('user_answers')[6])
+
+    time.sleep(0.2)
+    await bot.state_dispenser.set(message.peer_id, PracticeState.Q7)
+    await message.answer(ctx_storage.get('practice_words')[7][1])
+
+@labeler.private_message(state=PracticeState.Q7)
+async def practice_handler(message: Message):
+    user_answer = message.text
+    quiz_word_id = ctx_storage.get('practice_words')[7][0]
+    correct_answer = ctx_storage.get('practice_words')[7][2]
+    attempt_result = practice.check_answer(correct_answer, user_answer)
+
+    attempt = quiz_word_id, user_answer, attempt_result
+    user_answers = ctx_storage.get('user_answers')
+    user_answers.append(attempt)
+    ctx_storage.set('user_answers', user_answers)
+
+    print('ctx_ practice_words', ctx_storage.get('practice_words')[7])
+    print('ctx user_answers', ctx_storage.get('user_answers')[7])
+
+    time.sleep(0.2)
+    await bot.state_dispenser.set(message.peer_id, PracticeState.Q8)
+    await message.answer(ctx_storage.get('practice_words')[8][1])
+
+@labeler.private_message(state=PracticeState.Q8)
+async def practice_handler(message: Message):
+    user_answer = message.text
+    quiz_word_id = ctx_storage.get('practice_words')[8][0]
+    correct_answer = ctx_storage.get('practice_words')[8][2]
+    attempt_result = practice.check_answer(correct_answer, user_answer)
+
+    attempt = quiz_word_id, user_answer, attempt_result
+    user_answers = ctx_storage.get('user_answers')
+    user_answers.append(attempt)
+    ctx_storage.set('user_answers', user_answers)
+
+    print('ctx_ practice_words', ctx_storage.get('practice_words')[8])
+    print('ctx user_answers', ctx_storage.get('user_answers')[8])
+
+    time.sleep(0.2)
+    await bot.state_dispenser.set(message.peer_id, PracticeState.Q9)
+    await message.answer(ctx_storage.get('practice_words')[9][1])
+
+@labeler.private_message(state=PracticeState.Q9)
+async def practice_handler(message: Message):
+    user_answer = message.text
+    quiz_word_id = ctx_storage.get('practice_words')[9][0]
+    correct_answer = ctx_storage.get('practice_words')[9][2]
+    attempt_result = practice.check_answer(correct_answer, user_answer)
+
+    attempt = quiz_word_id, user_answer, attempt_result
+    user_answers = ctx_storage.get('user_answers')
+    user_answers.append(attempt)
+    ctx_storage.set('user_answers', user_answers)
+
+    print('ctx_ practice_words', ctx_storage.get('practice_words')[9])
+    print('ctx user_answers', ctx_storage.get('user_answers')[9])
+
+    time.sleep(0.2)
+    await bot.state_dispenser.set(message.peer_id, PracticeState.Q10)
+    await message.answer(ctx_storage.get('practice_words')[10][1])
+
+@labeler.private_message(state=PracticeState.Q10)
+async def practice_handler(message: Message):
+    user_answer = message.text
+    quiz_word_id = ctx_storage.get('practice_words')[10][0]
+    correct_answer = ctx_storage.get('practice_words')[10][2]
+    attempt_result = practice.check_answer(correct_answer, user_answer)
+
+    attempt = quiz_word_id, user_answer, attempt_result
+    user_answers = ctx_storage.get('user_answers')
+    user_answers.append(attempt)
+    ctx_storage.set('user_answers', user_answers)
+
+    print('ctx_ practice_words', ctx_storage.get('practice_words')[10])
+    print('ctx user_answers', ctx_storage.get('user_answers')[10])
+
+    time.sleep(0.2)
+    await bot.state_dispenser.set(message.peer_id, PracticeState.Q11)
+    await message.answer(ctx_storage.get('practice_words')[11][1])
+
+@labeler.private_message(state=PracticeState.Q11)
+async def practice_handler(message: Message):
+    user_answer = message.text
+    quiz_word_id = ctx_storage.get('practice_words')[11][0]
+    correct_answer = ctx_storage.get('practice_words')[11][2]
+    attempt_result = practice.check_answer(correct_answer, user_answer)
+
+    attempt = quiz_word_id, user_answer, attempt_result
+    user_answers = ctx_storage.get('user_answers')
+    user_answers.append(attempt)
+    ctx_storage.set('user_answers', user_answers)
+
+    print('ctx_ practice_words', ctx_storage.get('practice_words')[11])
+    print('ctx user_answers', ctx_storage.get('user_answers')[11])
+
+    time.sleep(0.2)
+    await bot.state_dispenser.set(message.peer_id, PracticeState.Q12)
+    await message.answer(ctx_storage.get('practice_words')[12][1])
+
+@labeler.private_message(state=PracticeState.Q12)
+async def practice_handler(message: Message):
+    user_answer = message.text
+    quiz_word_id = ctx_storage.get('practice_words')[12][0]
+    correct_answer = ctx_storage.get('practice_words')[12][2]
+    attempt_result = practice.check_answer(correct_answer, user_answer)
+
+    attempt = quiz_word_id, user_answer, attempt_result
+    user_answers = ctx_storage.get('user_answers')
+    user_answers.append(attempt)
+    ctx_storage.set('user_answers', user_answers)
+
+    print('ctx_ practice_words', ctx_storage.get('practice_words')[12])
+    print('ctx user_answers', ctx_storage.get('user_answers')[12])
+
+    time.sleep(0.2)
+    await bot.state_dispenser.set(message.peer_id, PracticeState.Q13)
+    await message.answer(ctx_storage.get('practice_words')[13][1])
+
+@labeler.private_message(state=PracticeState.Q13)
+async def practice_handler(message: Message):
+    user_answer = message.text
+    quiz_word_id = ctx_storage.get('practice_words')[13][0]
+    correct_answer = ctx_storage.get('practice_words')[13][2]
+    attempt_result = practice.check_answer(correct_answer, user_answer)
+
+    attempt = quiz_word_id, user_answer, attempt_result
+    user_answers = ctx_storage.get('user_answers')
+    user_answers.append(attempt)
+    ctx_storage.set('user_answers', user_answers)
+
+    print('ctx_ practice_words', ctx_storage.get('practice_words')[13])
+    print('ctx user_answers', ctx_storage.get('user_answers')[13])
+
+    time.sleep(0.2)
+    await bot.state_dispenser.set(message.peer_id, PracticeState.Q14)
+    await message.answer(ctx_storage.get('practice_words')[14][1])
+
+@labeler.private_message(state=PracticeState.Q14)
+async def practice_handler(message: Message):
+    user_answer = message.text
+    quiz_word_id = ctx_storage.get('practice_words')[14][0]
+    correct_answer = ctx_storage.get('practice_words')[14][2]
+    attempt_result = practice.check_answer(correct_answer, user_answer)
+
+    attempt = quiz_word_id, user_answer, attempt_result
+    user_answers = ctx_storage.get('user_answers')
+    user_answers.append(attempt)
+    ctx_storage.set('user_answers', user_answers)
+
+    print('ctx_ practice_words', ctx_storage.get('practice_words')[14])
+    print('ctx user_answers', ctx_storage.get('user_answers')[14])
+
+    time.sleep(0.2)
+    await bot.state_dispenser.set(message.peer_id, PracticeState.Q15)
+    await message.answer(ctx_storage.get('practice_words')[15][1])
+
+@labeler.private_message(state=PracticeState.Q15)
+async def practice_handler(message: Message):
+    ctx_storage.set('time_stop', practice.stop_timer())
+    practice_time = round(ctx_storage.get('time_stop') - ctx_storage.get('time_start') - 3, 2)
+
+    user_answer = message.text
+    quiz_word_id = ctx_storage.get('practice_words')[15][0]
+    correct_answer = ctx_storage.get('practice_words')[15][2]
+    attempt_result = practice.check_answer(correct_answer, user_answer)
+
+    attempt = quiz_word_id, user_answer, attempt_result
+    user_answers = ctx_storage.get('user_answers')
+    user_answers.append(attempt)
+    ctx_storage.set('user_answers', user_answers)
+
+    print('ctx_ practice_words', ctx_storage.get('practice_words')[15])
+    print('ctx user_answers', ctx_storage.get('user_answers')[15])
+
+
+    # Подсчет набранных очков
+    # и формирование списка слов, в которых пользователь допустил ошибку
+    practice_result = 0
+    wrong_answers = []
+    wrong_answers_to_user = []
+    practice_words = ctx_storage.get('practice_words')
+    user_answers = ctx_storage.get('user_answers')
+    for elem in user_answers:
+        practice_result += elem[2]
+
+        if elem[2] == 0:
+            wrong_answers.append((elem[0], elem[1]))
+
+            for golem in practice_words:
+                if golem[0] == elem[0]:
+                    wrong_answers_to_user.append(golem[1])
+
+
+    # Запись результатов в базу данных
+    topic_id = ctx_storage.get('topic')[0]
+    user_id = ctx_storage.get('user_id')
+    if user_id is None:
+        users_info = await bot.api.users.get(message.from_id)
+        user_id = users_info[0].id
+    db.add_train_results(topic_id, user_id, practice_time, practice_result, wrong_answers)
+
+
+    # Удаление данных в хранилище
+    ctx_storage.delete('practice_words')
+    ctx_storage.delete('user_answers')
+    ctx_storage.delete('time_start')
+    ctx_storage.delete('time_stop')
+    ctx_storage.delete('topic')
+    print('ctx_storages was deleted.')
+
+    await message.answer(f'Вы завершили тренировку.\nВаш результат: {practice_result} из 16 за {practice_time} секунд!')
+
+    if len(wrong_answers_to_user) > 0:
+        await message.answer(f'Повторите слова:')
+        words_to_repeat = ''
+        for i in range(len(wrong_answers_to_user)):
+            words_to_repeat = words_to_repeat + wrong_answers_to_user[i] + '\n'
+        await message.answer(f'{words_to_repeat}\n')
+
+    await bot.state_dispenser.set(message.peer_id, MenuState.START_MENU)
+    await stop_handler(message)
+
+
+@labeler.private_message(state=MenuState.START_PRACTICE, payload={'cmd': 'back_to_start'}, text='Назад')
+async def back_to_start_menu_handler(message: Message):
+    await message.answer('Начнем с начала!?', keyboard=KBoard.KEYBOARD_DEFAULT)
+    await bot.state_dispenser.set(message.peer_id, MenuState.START_MENU)
+
+
+
+
+
+# Running Bot
 if __name__ == '__main__':
-    db = grammar.DB()
-
-    session = vk_connect()
-    chat_listen(session)
+    bot.run_forever()

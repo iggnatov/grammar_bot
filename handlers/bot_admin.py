@@ -1,11 +1,14 @@
 from vkbottle.bot import BotLabeler, Message, rules
 from db_grammar import DB
-from config import state_dispenser
-from vkbottle import BaseStateGroup
+from vkbottle import BaseStateGroup, BuiltinStateDispenser
 
 
 admin_labeler = BotLabeler()
 admin_labeler.auto_rules = [rules.FromPeerRule(1250100)]
+
+
+state_dispenser = BuiltinStateDispenser()
+
 
 db = DB()
 
@@ -13,18 +16,18 @@ class AdminMenuState(BaseStateGroup):
     ADMIN_HELP = 'admin_help'
     CHANGE_STATUS = 'change_status'
 
-admin_commands = {'admin_help': ' - показать список доступных команд администратора',
-                  'show': ' - show',
+admin_commands = {'admin_help': ' - показать список доступных команд администратора\n',
+                  'show': ' - show\n',
                   'show_sets': ' - показать список всех наборов в формате: \n'
                                'id : {set_id}\n'
                                'name : {set_name}\n'
                                'status : {set_status}\n',
-                  'change_set_status': ' - изменить статус набора слов'
+                  'change_set_status': ' - изменить статус набора слов\n'
                   }
 
 @admin_labeler.private_message(command='admin_help')
 async def show(message: Message):
-    answer = 'Список доступных команд администратора:\n'
+    answer = 'Список доступных команд администратора:\n\n'
     for key, value in admin_commands.items():
 
         answer += ('\'/' + key + '\'' + value + '\n')

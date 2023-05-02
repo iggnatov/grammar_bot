@@ -1,11 +1,15 @@
 import os
-from config import api
-from vkbottle import BaseStateGroup, Keyboard, Text
-from vkbottle.bot import Bot, Message
+from vkbottle import BaseStateGroup, Keyboard, Text, API, BuiltinStateDispenser
+from vkbottle.bot import Bot, Message, BotLabeler
 
+labeler = BotLabeler()
+state_dispenser = BuiltinStateDispenser()
 # Load token from system environment variable
 # https://12factor.net/config
-bot = Bot(api=api)
+bot = Bot(
+    api=API(os.environ.get("VK_API")),
+    labeler=labeler
+)
 
 # StateDispenser can be accessed / set with
 # bot.state_dispenser

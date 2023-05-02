@@ -1,28 +1,32 @@
 import os
-import json
 import psycopg2
 from psycopg2 import Error
+import dotenv
+
+dotenv.load_dotenv()
+
 
 class DB:
     # --- Подключение к базе данных --- #
     # Установление соединения
     @staticmethod
     def get_connection():
-        # getting connection configs
-        # global conn, cur
-        config_path = '/Users/iggnatov/Documents/dev/grammar_bot/sql_setting_files/config_file.txt'
-        with open(config_path, 'r') as json_file:
-            j_data = json.load(json_file)
-
         # connecting to database
         try:
-            conn = psycopg2.connect(user=j_data['user'], password=j_data['password'],
-                                    host=j_data['host'], port='5433', database=j_data['dbname'])
+            conn = psycopg2.connect(
+                user=os.environ.get("DB_USER"),
+                password=os.environ.get("DB_PASSWORD"),
+                host=os.environ.get("DB_HOST"),
+                port=os.environ.get("DB_PORT"),
+                database=os.environ.get("DB_NAME")
+                )
             cur = conn.cursor()
 
             cur.execute("SELECT version();")
             record = cur.fetchone()
             print("You\'re connected to - ", record)
+            print('conn', conn)
+            print('cur', cur)
             return conn, cur
 
 
@@ -108,14 +112,14 @@ class DB:
         cursor = db[1]
 
         set_file_name = self.choose_word_set_to_add()
-        set_status = self.choose_set_status()
+        # set_status = self.choose_set_status()
         set_name = self.choose_word_set_name()
 
         # adding word_set to database
         cursor.execute(f"""INSERT INTO word_sets (set_file_name, set_status, set_name) 
                         VALUES (
                         '{set_file_name}', 
-                        '{set_status}', 
+                        'INACTIVE', 
                         '{set_name}');""")
         connection.commit()
 
