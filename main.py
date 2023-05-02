@@ -3,6 +3,7 @@ from vkbottle.bot import Bot, Message, BotLabeler
 from vkbottle import BaseStateGroup, CtxStorage, API
 # from vkbottle.dispatch.rules import ABCRule
 # from vkbottle import GroupEventType, GroupTypes, Keyboard, Text, VKAPIError
+from vkbottle.tools import PhotoMessageUploader
 from loguru import logger
 from handlers import labelers
 from generate_keyboard import KBoard
@@ -24,6 +25,7 @@ db = DB()
 practice = Practice()
 
 
+
 labeler = BotLabeler()
 
 # Создаем бота
@@ -33,6 +35,8 @@ bot = Bot(
     state_dispenser=state_dispenser
 )
 
+#
+photo_uploader = PhotoMessageUploader(bot.api)
 
 # Loading handlers to global labeler
 for each_labeler in labelers:
@@ -89,11 +93,11 @@ async def hello_handler(message: Message):
 @labeler.private_message(state=MenuState.START_MENU, payload={'cmd': 'rules'}, text='Правила')
 async def bot_rules_handler(message: Message):
     rules_message = """
-    Итак, правила:\n\n Для тренировки тебе необходимо выбрать одну из предложенных тем. 
-    На каждую тему я приготовил набор из 16 слов. 
-    Я буду по очереди предлагать тебе слова.\n\n
-    Тебе будет нужно ввести пропущенную букву или поставить символ @, если, по твоему мнению, 
-    в этом случае никакой буквы не пишется.\n\n
+    Итак, правила:\n\n Для тренировки тебе необходимо выбрать одну из предложенных тем. \
+    На каждую тему я приготовил набор из 16 слов. \
+    Я буду по очереди предлагать тебе слова.\n\n \
+    Тебе будет нужно ввести пропущенную букву или поставить символ @, если, по твоему мнению, \
+    в этом случае никакой буквы не пишется.\n\n \
     Приступим к тренировке?
     """
 
@@ -482,6 +486,8 @@ async def practice_handler(message: Message):
     ctx_storage.delete('topic')
     print('ctx_storages was deleted.')
 
+
+
     if len(wrong_answers_to_user) > 0:
         await message.answer(f'Повтори слова:')
         words_to_repeat = ''
@@ -489,7 +495,16 @@ async def practice_handler(message: Message):
             words_to_repeat = words_to_repeat + wrong_answers_to_user[i] + '\n'
         await message.answer(f'{words_to_repeat}\n')
 
-    await message.answer(practice.get_final_message(practice_result), keyboard=KBoard.KEYBOARD_DEFAULT)
+    answer_to_user = practice.get_final_message(practice_result)
+
+    photo = await photo_uploader.upload(
+        file_source=answer_to_user[1],
+        peer_id=message.peer_id,
+    )
+
+    await message.answer(answer_to_user[0], attachment=photo, keyboard=KBoard.KEYBOARD_DEFAULT)
+
+
     await bot.state_dispenser.set(message.peer_id, MenuState.START_MENU)
 
 
