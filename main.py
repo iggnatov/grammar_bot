@@ -121,13 +121,6 @@ async def stop_handler(message: Message):
     await bot.state_dispenser.set(message.peer_id, MenuState.START_MENU)
 
 
-# Test handler
-@labeler.private_message(command='t')
-async def stop_handler(message: Message):
-    await message.answer('test\n')
-
-
-
 @labeler.private_message(state=PracticeState.Q0)
 async def practice_handler(message: Message):
     user_answer = message.text
