@@ -1,5 +1,0 @@
-CREATE TABLE word_sets (
-    id BIGSERIAL NOT NULL PRIMARY KEY,
-    word_set_name VARCHAR(50) NOT NULL UNIQUE,
-    word_ids BIGSERIAL ARRAY
-);
