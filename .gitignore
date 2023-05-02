@@ -1,1 +1,3 @@
-/sql_setting_files/config_file.txt
+.env
+test.py
+test_foo.py

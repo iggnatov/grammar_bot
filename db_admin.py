@@ -1,4 +1,4 @@
-import grammar
+from db_grammar import DB
 
 def console_admin_db():
     while True:
@@ -26,5 +26,5 @@ def console_admin_db():
 
 
 if __name__ == '__main__':
-    word_set = grammar.DB()
+    word_set = DB()
     console_admin_db()
