@@ -62,7 +62,6 @@ async def change_set_status(message: Message):
 @admin_labeler.private_message(state=AdminMenuState.CHANGE_STATUS)
 async def change_status(message: Message):
     set_id = message.text
-    await message.answer(f'{set_id}')
     db.change_set_status(set_id)
     await message.answer(f'Готово.')
     await state_dispenser.set(message.peer_id, AdminMenuState.ADMIN_HELP)

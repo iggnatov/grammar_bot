@@ -1,7 +1,6 @@
-import os
-import sys, time
+import os, sys, time, json
 from vkbottle.bot import Bot, Message, BotLabeler
-from vkbottle import BaseStateGroup, CtxStorage, API, BuiltinStateDispenser
+from vkbottle import BaseStateGroup, CtxStorage, API
 # from vkbottle.dispatch.rules import ABCRule
 # from vkbottle import GroupEventType, GroupTypes, Keyboard, Text, VKAPIError
 from loguru import logger
@@ -24,8 +23,8 @@ db = DB()
 # Создаем экземпляр класса для Тренировки
 practice = Practice()
 
-labeler = BotLabeler()
 
+labeler = BotLabeler()
 
 # Создаем бота
 bot = Bot(
@@ -78,24 +77,40 @@ async def hello_handler(message: Message):
     user_id = users_info[0].id
     ctx_storage.set('user_id', user_id)
     db.add_user(user_id)
-    await message.answer(f'Привет, {users_info[0].first_name}!', keyboard=KBoard.KEYBOARD_DEFAULT)
+
+
+
+    await message.answer(f"""Привет, {users_info[0].first_name}! 
+    Я чат-бот проекта «Грамматики». Меня зовут Грамматик. Давай проверим твою грамотность?
+    Нажми на кнопку Тренировка, чтобы приступить к тренировке.""", keyboard=KBoard.KEYBOARD_DEFAULT)
     await bot.state_dispenser.set(message.peer_id, MenuState.START_MENU)
 
 
 @labeler.private_message(state=MenuState.START_MENU, payload={'cmd': 'rules'}, text='Правила')
 async def bot_rules_handler(message: Message):
-    await message.answer('Правила', keyboard=KBoard.KEYBOARD_DEFAULT)
+    rules_message = """
+    Итак, правила:\n\n Для тренировки тебе необходимо выбрать одну из предложенных тем. 
+    На каждую тему я приготовил набор из 16 слов. 
+    Я буду по очереди предлагать тебе слова.\n\n
+    Тебе будет нужно ввести пропущенную букву или поставить символ @, если, по твоему мнению, 
+    в этом случае никакой буквы не пишется.\n\n
+    Приступим к тренировке?
+    """
+
+    await message.answer(rules_message, keyboard=KBoard.KEYBOARD_DEFAULT)
 
 
 @labeler.private_message(state=MenuState.START_MENU, payload={'cmd': 'practice'}, text='Тренировка')
 async def chose_topic_handler(message: Message):
-    await message.answer('Выбери тему:', keyboard=KBoard.get_topic_keyboard(db.get_active_topic_list_from_db()))
+    await message.answer('Отлично! Теперь выбери тему, которая тебе интересна.',
+                         keyboard=KBoard.get_topic_keyboard(db.get_active_topic_list_from_db()))
     await bot.state_dispenser.set(message.peer_id, MenuState.START_PRACTICE)
 
 
 @labeler.private_message(state=MenuState.START_PRACTICE, text=db.get_active_topic_list_from_db())
 async def pre_start_practice_handler(message: Message):
-    await message.answer(f'Вы выбрали тему {message.text}. Начать тренировку?', keyboard=KBoard.KEYBOARD_START_PRACTICE)
+    await message.answer(f'Ты выбрал тему {message.text}. Начнём тренировку?',
+                         keyboard=KBoard.KEYBOARD_START_PRACTICE)
     topic_id = db.get_word_set_id(message.text)
     ctx_storage.set('topic', (topic_id, message.text))
     # print('ctx topic', ctx_storage.get('topic'))
@@ -118,7 +133,8 @@ async def start_practice_handler(message: Message):
 
 @labeler.private_message(command='q')
 async def stop_handler(message: Message):
-    await message.answer('Тренировка завершена, возвращаюсь в главное меню.', keyboard=KBoard.KEYBOARD_DEFAULT)
+    await message.answer('Тренировка завершена, возвращаюсь в главное меню.',
+                         keyboard=KBoard.KEYBOARD_DEFAULT)
     await bot.state_dispenser.set(message.peer_id, MenuState.START_MENU)
 
 
@@ -466,7 +482,8 @@ async def practice_handler(message: Message):
     ctx_storage.delete('topic')
     print('ctx_storages was deleted.')
 
-    await message.answer(f'Вы завершили тренировку.\nВаш результат: {practice_result} из 16 за {practice_time} секунд!')
+    # await message.answer(f'Вы завершили тренировку.\nВаш результат: {practice_result} из 16 за {practice_time} секунд!')
+    await message.answer(practice.get_final_message(practice_result))
 
     if len(wrong_answers_to_user) > 0:
         await message.answer(f'Повторите слова:')
