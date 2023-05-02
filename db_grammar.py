@@ -205,7 +205,7 @@ class DB:
         # выгрузить все слова из этого набора слов
         # SELECT * FROM rel_words_sets WHERE set_id = 24;
         # или
-        # выгрузить id всех слов этого наора слов
+        # выгрузить id всех слов этого набора слов
         # SELECT words.id FROM words
         # JOIN rel_words_sets
         # ON words.id = rel_words_sets.word_id
@@ -227,7 +227,7 @@ class DB:
             cursor.execute(f"""SELECT set_id FROM rel_words_sets WHERE word_id = {each_word_id};""")
             quantity_of_sets = len(cursor.fetchall())
 
-            # если слово соержится в 1 наборе
+            # если слово содержится в 1 наборе
             # SELECT set_id FROM rel_words_sets WHERE word_id = 78;
             if quantity_of_sets == 1:
                 i += 1
