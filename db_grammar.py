@@ -373,7 +373,7 @@ class DB:
         cursor.execute(f"""
         SELECT words.id, word, gap_index FROM words
         JOIN rel_words_sets
-        ON words.id = rel_words_sets.id
+        ON words.id = rel_words_sets.word_id
         AND rel_words_sets.set_id = {word_set_id};""")
 
         word_list = cursor.fetchall()
