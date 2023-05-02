@@ -241,6 +241,10 @@ class DB:
                 cursor.execute(f"""DELETE FROM words WHERE words.id = {each_word_id};""")
                 connection.commit()
 
+                # и удалить из таблицы mistakes
+                cursor.execute(f"""DELETE FROM mistakes WHERE word_id = {each_word_id};""")
+                connection.commit()
+
             # если слово содержится в 2 наборах
             else:
                 print(0)
@@ -248,6 +252,10 @@ class DB:
                 # DELETE FROM rel_words_sets WHERE word_id = 78 AND set_id = 24;
                 cursor.execute(f"""DELETE FROM rel_words_sets 
                 WHERE word_id = {each_word_id} AND set_id = {word_set_id};""")
+                connection.commit()
+
+                # и удалить из таблицы mistakes
+                cursor.execute(f"""DELETE FROM mistakes WHERE word_id = {each_word_id};""")
                 connection.commit()
 
         # удалить набор слов из таблицы наборов слов
@@ -499,8 +507,8 @@ class DB:
         else:
             cursor.execute(
                 f"""UPDATE word_sets
-                             SET set_status = 'ACTIVE' 
-                             WHERE id = {set_id};""")
+                SET set_status = 'ACTIVE' 
+                WHERE id = {set_id};""")
             connection.commit()
             print(f'Status of word_set {set_id} was changed to ACTIVE.')
 
