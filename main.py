@@ -133,7 +133,7 @@ async def start_practice_handler(message: Message):
 
 @labeler.private_message(command='q')
 async def stop_handler(message: Message):
-    await message.answer('Тренировка завершена, возвращаюсь в главное меню.',
+    await message.answer('Отмена! Возвращаюсь в главное меню.',
                          keyboard=KBoard.KEYBOARD_DEFAULT)
     await bot.state_dispenser.set(message.peer_id, MenuState.START_MENU)
 
@@ -482,18 +482,16 @@ async def practice_handler(message: Message):
     ctx_storage.delete('topic')
     print('ctx_storages was deleted.')
 
-    # await message.answer(f'Вы завершили тренировку.\nВаш результат: {practice_result} из 16 за {practice_time} секунд!')
-    await message.answer(practice.get_final_message(practice_result))
-
     if len(wrong_answers_to_user) > 0:
-        await message.answer(f'Повторите слова:')
+        await message.answer(f'Повтори слова:')
         words_to_repeat = ''
         for i in range(len(wrong_answers_to_user)):
             words_to_repeat = words_to_repeat + wrong_answers_to_user[i] + '\n'
         await message.answer(f'{words_to_repeat}\n')
 
+    await message.answer(practice.get_final_message(practice_result), keyboard=KBoard.KEYBOARD_DEFAULT)
     await bot.state_dispenser.set(message.peer_id, MenuState.START_MENU)
-    await stop_handler(message)
+
 
 
 @labeler.private_message(state=MenuState.START_PRACTICE, payload={'cmd': 'back_to_start'}, text='Назад')
