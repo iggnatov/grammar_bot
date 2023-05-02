@@ -64,7 +64,7 @@ class DB:
     @staticmethod
     def choose_word_set_to_add():
         # The path for listing items
-        path = '/Users/iggnatov/Documents/dev/grammar_bot/word_sets'
+        path = '/home/grammar/grammar_bot/word_sets'
 
         # The list of items
         files = os.listdir(path)
@@ -129,7 +129,7 @@ class DB:
         record_id = cursor.fetchone()
 
         # working with file
-        with open('/Users/iggnatov/Documents/dev/grammar_bot/word_sets/' + set_file_name, 'r') as f:
+        with open('/home/grammar/grammar_bot/word_sets/' + set_file_name, 'r') as f:
             print(f"File \'{set_file_name}\' opened")
 
             # reading words from file
@@ -258,10 +258,17 @@ class DB:
                 cursor.execute(f"""DELETE FROM mistakes WHERE word_id = {each_word_id};""")
                 connection.commit()
 
+        # Удалить из таблицы mistakes все записи с данным набором слов
+        cursor.execute(f"""SELECT * FROM trains WHERE set_id = {word_set_id};""")
+        temp_trains_to_delete = cursor.fetchall()
+
+        for elem in temp_trains_to_delete:
+            cursor.execute(f"""DELETE FROM mistakes WHERE train_id = {elem[0]}""")
+
         # Удалить все записи из таблицы Trains
         cursor.execute(f"""DELETE FROM trains WHERE set_id = {word_set_id};""")
         connection.commit()
-        
+
         # удалить набор слов из таблицы наборов слов
         # DELETE FROM word_sets WHERE set_name = 'X';
         cursor.execute(f"""DELETE FROM word_sets WHERE word_sets.id = {word_set_id};""")

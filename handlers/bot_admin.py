@@ -1,13 +1,10 @@
 from vkbottle.bot import BotLabeler, Message, rules
 from db_grammar import DB
 from vkbottle import BaseStateGroup, BuiltinStateDispenser
-
+from config import state_dispenser
 
 admin_labeler = BotLabeler()
 admin_labeler.auto_rules = [rules.FromPeerRule(1250100)]
-
-
-state_dispenser = BuiltinStateDispenser()
 
 
 db = DB()
@@ -15,6 +12,7 @@ db = DB()
 class AdminMenuState(BaseStateGroup):
     ADMIN_HELP = 'admin_help'
     CHANGE_STATUS = 'change_status'
+
 
 admin_commands = {'admin_help': ' - показать список доступных команд администратора\n',
                   'show': ' - show\n',
@@ -26,7 +24,7 @@ admin_commands = {'admin_help': ' - показать список доступн
                   }
 
 @admin_labeler.private_message(command='admin_help')
-async def show(message: Message):
+async def admin_help(message: Message):
     answer = 'Список доступных команд администратора:\n\n'
     for key, value in admin_commands.items():
 
@@ -41,7 +39,7 @@ async def show(message: Message):
 
 
 @admin_labeler.private_message(command='show_sets')
-async def show(message: Message):
+async def show_sets(message: Message):
     all_sets = db.admin_get_active_topic_array_from_db() + db.admin_get_inactive_topic_array_from_db()
     print(all_sets)
 
@@ -56,14 +54,15 @@ async def show(message: Message):
 
 
 @admin_labeler.private_message(command='change_set_status')
-async def show(message: Message):
+async def change_set_status(message: Message):
     await message.answer('Укажи id набора, статус которого нужно изменить.')
     await state_dispenser.set(message.peer_id, AdminMenuState.CHANGE_STATUS)
 
 
 @admin_labeler.private_message(state=AdminMenuState.CHANGE_STATUS)
-async def show(message: Message):
+async def change_status(message: Message):
     set_id = message.text
+    await message.answer(f'{set_id}')
     db.change_set_status(set_id)
     await message.answer(f'Готово.')
     await state_dispenser.set(message.peer_id, AdminMenuState.ADMIN_HELP)

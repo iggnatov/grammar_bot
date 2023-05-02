@@ -9,6 +9,7 @@ from handlers import labelers
 from generate_keyboard import KBoard
 from db_grammar import DB
 from handlers.practice import Practice
+from config import state_dispenser
 
 
 # Logging (loguru) settings
@@ -24,7 +25,7 @@ db = DB()
 practice = Practice()
 
 labeler = BotLabeler()
-state_dispenser = BuiltinStateDispenser()
+
 
 # Создаем бота
 bot = Bot(
