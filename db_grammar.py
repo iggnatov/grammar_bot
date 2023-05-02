@@ -258,6 +258,10 @@ class DB:
                 cursor.execute(f"""DELETE FROM mistakes WHERE word_id = {each_word_id};""")
                 connection.commit()
 
+        # Удалить все записи из таблицы Trains
+        cursor.execute(f"""DELETE FROM trains WHERE set_id = {word_set_id};""")
+        connection.commit()
+        
         # удалить набор слов из таблицы наборов слов
         # DELETE FROM word_sets WHERE set_name = 'X';
         cursor.execute(f"""DELETE FROM word_sets WHERE word_sets.id = {word_set_id};""")
