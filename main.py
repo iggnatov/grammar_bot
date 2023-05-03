@@ -30,7 +30,7 @@ labeler = BotLabeler()
 
 # Создаем бота
 bot = Bot(
-    api=API(os.environ.get("VK_LOCAL_API")),
+    api=API(os.environ.get("VK_API")),
     labeler=labeler,
     state_dispenser=state_dispenser
 )
