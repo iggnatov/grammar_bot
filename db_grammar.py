@@ -25,8 +25,8 @@ class DB:
             cur.execute("SELECT version();")
             record = cur.fetchone()
             print("You\'re connected to - ", record)
-            print('conn', conn)
-            print('cur', cur)
+            # print('conn', conn)
+            # print('cur', cur)
             return conn, cur
 
 
@@ -404,6 +404,30 @@ class DB:
         # print('Word_dict was returned.')
         print(f'Word_list \'{set_name}\' was returned.')
         return word_list
+
+
+    def get_words_from_set_id(self, set_id):
+        db = self.get_connection()
+        connection = db[0]
+        cursor = db[1]
+
+        # get words
+        cursor.execute(f"""
+        SELECT words.id, word, gap_index FROM words
+        JOIN rel_words_sets
+        ON words.id = rel_words_sets.word_id
+        AND rel_words_sets.set_id = {set_id};""")
+
+        word_list = cursor.fetchall()
+
+        self.close_connection(cursor, connection)
+        # word_dict = {}
+        # for elem in word_list:
+        #     word_dict[elem[0]] = elem[1]
+        # print('Word_dict was returned.')
+        print(f'Word_list of set_id: {set_id} was returned.')
+        return word_list
+
 
     # Получение id указанного набора слов
     def get_word_set_id(self, set_name):
