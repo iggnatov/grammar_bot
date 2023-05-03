@@ -30,7 +30,7 @@ labeler = BotLabeler()
 
 # Создаем бота
 bot = Bot(
-    api=API(os.environ.get("VK_API")),
+    api=API(os.environ.get("VK_LOCAL_API")),
     labeler=labeler,
     state_dispenser=state_dispenser
 )
@@ -83,23 +83,15 @@ async def hello_handler(message: Message):
     ctx_storage.set('user_id', user_id)
     db.add_user(user_id)
 
-
-    await message.answer(f"""Привет, {users_info[0].first_name}! 
-    Я чат-бот проекта «Грамматики». Меня зовут Грамматик. Давай проверим твою грамотность?
-    Нажми на кнопку Тренировка, чтобы приступить к тренировке.""", keyboard=KBoard.KEYBOARD_DEFAULT)
+    answer = f"""Привет, {users_info[0].first_name}!\nЯ чат-бот проекта «Грамматики». Меня зовут Грамматик. Давай проверим твою грамотность? \n\nНажми на кнопку Правила, чтобы ознакомиться с правилами. \nНажми на кнопку Тренировка, чтобы приступить к тренировке."""
+    await message.answer(answer, keyboard=KBoard.KEYBOARD_DEFAULT)
     await bot.state_dispenser.set(message.peer_id, MenuState.START_MENU)
 
 
 @labeler.private_message(state=MenuState.START_MENU, payload={'cmd': 'rules'}, text='Правила')
 async def bot_rules_handler(message: Message):
     rules_message = """
-    Итак, правила:\n\n Для тренировки тебе необходимо выбрать одну из предложенных тем. \
-    На каждую тему я приготовил набор из 16 слов. \
-    Я буду по очереди предлагать тебе слова.\n\n \
-    Тебе будет нужно ввести пропущенную букву или поставить символ @, если, по твоему мнению, \
-    в этом случае никакой буквы не пишется.\n\n \
-    Приступим к тренировке?
-    """
+        Итак, правила:\n\nДля тренировки тебе необходимо выбрать одну из предложенных тем. На каждую тему я приготовил набор из 16 слов. Я буду по очереди предлагать тебе слова.\n\nТебе будет нужно ввести пропущенную букву или поставить символ @, если, по твоему мнению, в этом случае никакой буквы не пишется. Чтобы выйти из тренировки, введи \'/q\'.\n\nПриступим к тренировке?"""
 
     await message.answer(rules_message, keyboard=KBoard.KEYBOARD_DEFAULT)
 
@@ -137,13 +129,21 @@ async def start_practice_handler(message: Message):
 
 @labeler.private_message(command='q')
 async def stop_handler(message: Message):
+    # Удаление данных в хранилище
+    ctx_storage.delete('practice_words')
+    ctx_storage.delete('user_answers')
+    ctx_storage.delete('time_start')
+    # ctx_storage.delete('time_stop') -
+    ctx_storage.delete('topic')
+    print('ctx_storages was deleted.')
+
     await message.answer('Отмена! Возвращаюсь в главное меню.',
                          keyboard=KBoard.KEYBOARD_DEFAULT)
     await bot.state_dispenser.set(message.peer_id, MenuState.START_MENU)
 
 
 @labeler.private_message(state=PracticeState.Q0)
-async def practice_handler(message: Message):
+async def practice_handler_0(message: Message):
     user_answer = message.text
     quiz_word_id = ctx_storage.get('practice_words')[0][0]
     correct_answer = ctx_storage.get('practice_words')[0][2]
@@ -164,7 +164,7 @@ async def practice_handler(message: Message):
 
 
 @labeler.private_message(state=PracticeState.Q1)
-async def practice_handler(message: Message):
+async def practice_handler_1(message: Message):
     user_answer = message.text
     quiz_word_id = ctx_storage.get('practice_words')[1][0]
     correct_answer = ctx_storage.get('practice_words')[1][2]
@@ -185,7 +185,7 @@ async def practice_handler(message: Message):
 
 
 @labeler.private_message(state=PracticeState.Q2)
-async def practice_handler(message: Message):
+async def practice_handler_2(message: Message):
     user_answer = message.text
     quiz_word_id = ctx_storage.get('practice_words')[2][0]
     correct_answer = ctx_storage.get('practice_words')[2][2]
@@ -205,7 +205,7 @@ async def practice_handler(message: Message):
 
 
 @labeler.private_message(state=PracticeState.Q3)
-async def practice_handler(message: Message):
+async def practice_handler_3(message: Message):
     user_answer = message.text
     quiz_word_id = ctx_storage.get('practice_words')[3][0]
     correct_answer = ctx_storage.get('practice_words')[3][2]
@@ -224,7 +224,7 @@ async def practice_handler(message: Message):
     await message.answer(ctx_storage.get('practice_words')[4][1])
 
 @labeler.private_message(state=PracticeState.Q4)
-async def practice_handler(message: Message):
+async def practice_handler_4(message: Message):
     user_answer = message.text
     quiz_word_id = ctx_storage.get('practice_words')[4][0]
     correct_answer = ctx_storage.get('practice_words')[4][2]
@@ -243,7 +243,7 @@ async def practice_handler(message: Message):
     await message.answer(ctx_storage.get('practice_words')[5][1])
 
 @labeler.private_message(state=PracticeState.Q5)
-async def practice_handler(message: Message):
+async def practice_handler_5(message: Message):
     user_answer = message.text
     quiz_word_id = ctx_storage.get('practice_words')[5][0]
     correct_answer = ctx_storage.get('practice_words')[5][2]
@@ -262,7 +262,7 @@ async def practice_handler(message: Message):
     await message.answer(ctx_storage.get('practice_words')[6][1])
 
 @labeler.private_message(state=PracticeState.Q6)
-async def practice_handler(message: Message):
+async def practice_handler_6(message: Message):
     user_answer = message.text
     quiz_word_id = ctx_storage.get('practice_words')[6][0]
     correct_answer = ctx_storage.get('practice_words')[6][2]
@@ -281,7 +281,7 @@ async def practice_handler(message: Message):
     await message.answer(ctx_storage.get('practice_words')[7][1])
 
 @labeler.private_message(state=PracticeState.Q7)
-async def practice_handler(message: Message):
+async def practice_handler_7(message: Message):
     user_answer = message.text
     quiz_word_id = ctx_storage.get('practice_words')[7][0]
     correct_answer = ctx_storage.get('practice_words')[7][2]
@@ -300,7 +300,7 @@ async def practice_handler(message: Message):
     await message.answer(ctx_storage.get('practice_words')[8][1])
 
 @labeler.private_message(state=PracticeState.Q8)
-async def practice_handler(message: Message):
+async def practice_handler_8(message: Message):
     user_answer = message.text
     quiz_word_id = ctx_storage.get('practice_words')[8][0]
     correct_answer = ctx_storage.get('practice_words')[8][2]
@@ -319,7 +319,7 @@ async def practice_handler(message: Message):
     await message.answer(ctx_storage.get('practice_words')[9][1])
 
 @labeler.private_message(state=PracticeState.Q9)
-async def practice_handler(message: Message):
+async def practice_handler_9(message: Message):
     user_answer = message.text
     quiz_word_id = ctx_storage.get('practice_words')[9][0]
     correct_answer = ctx_storage.get('practice_words')[9][2]
@@ -338,7 +338,7 @@ async def practice_handler(message: Message):
     await message.answer(ctx_storage.get('practice_words')[10][1])
 
 @labeler.private_message(state=PracticeState.Q10)
-async def practice_handler(message: Message):
+async def practice_handler_10(message: Message):
     user_answer = message.text
     quiz_word_id = ctx_storage.get('practice_words')[10][0]
     correct_answer = ctx_storage.get('practice_words')[10][2]
@@ -357,7 +357,7 @@ async def practice_handler(message: Message):
     await message.answer(ctx_storage.get('practice_words')[11][1])
 
 @labeler.private_message(state=PracticeState.Q11)
-async def practice_handler(message: Message):
+async def practice_handler_11(message: Message):
     user_answer = message.text
     quiz_word_id = ctx_storage.get('practice_words')[11][0]
     correct_answer = ctx_storage.get('practice_words')[11][2]
@@ -376,7 +376,7 @@ async def practice_handler(message: Message):
     await message.answer(ctx_storage.get('practice_words')[12][1])
 
 @labeler.private_message(state=PracticeState.Q12)
-async def practice_handler(message: Message):
+async def practice_handler_12(message: Message):
     user_answer = message.text
     quiz_word_id = ctx_storage.get('practice_words')[12][0]
     correct_answer = ctx_storage.get('practice_words')[12][2]
@@ -395,7 +395,7 @@ async def practice_handler(message: Message):
     await message.answer(ctx_storage.get('practice_words')[13][1])
 
 @labeler.private_message(state=PracticeState.Q13)
-async def practice_handler(message: Message):
+async def practice_handler_13(message: Message):
     user_answer = message.text
     quiz_word_id = ctx_storage.get('practice_words')[13][0]
     correct_answer = ctx_storage.get('practice_words')[13][2]
@@ -414,7 +414,7 @@ async def practice_handler(message: Message):
     await message.answer(ctx_storage.get('practice_words')[14][1])
 
 @labeler.private_message(state=PracticeState.Q14)
-async def practice_handler(message: Message):
+async def practice_handler_14(message: Message):
     user_answer = message.text
     quiz_word_id = ctx_storage.get('practice_words')[14][0]
     correct_answer = ctx_storage.get('practice_words')[14][2]
@@ -433,7 +433,7 @@ async def practice_handler(message: Message):
     await message.answer(ctx_storage.get('practice_words')[15][1])
 
 @labeler.private_message(state=PracticeState.Q15)
-async def practice_handler(message: Message):
+async def practice_handler_15(message: Message):
     ctx_storage.set('time_stop', practice.stop_timer())
     practice_time = round(ctx_storage.get('time_stop') - ctx_storage.get('time_start') - 15 * 0.5, 2)
 
@@ -513,9 +513,6 @@ async def practice_handler(message: Message):
 async def back_to_start_menu_handler(message: Message):
     await message.answer('Начнем с начала!?', keyboard=KBoard.KEYBOARD_DEFAULT)
     await bot.state_dispenser.set(message.peer_id, MenuState.START_MENU)
-
-
-
 
 
 # Running Bot

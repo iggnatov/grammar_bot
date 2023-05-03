@@ -24,6 +24,20 @@ class KBoard:
     # KEYBOARD_TOPICS = get_topic_keyboard(topic_list, Keyboard(one_time=False, inline=True))
 
 
+    KEYBOARD_ADMIN = (
+        Keyboard(one_time=False, inline=True)
+        .add(Text("/admin_help"))
+        .row()
+        .add(Text("/show_sets"))
+        .row()
+        .add(Text("/show_active_sets"))
+        .row()
+        .add(Text("/change_set_status"))
+        .row()
+        .add(Text("/show_words"))
+        .get_json()
+    )
+
     # Клавиатура по умолчанию
     KEYBOARD_DEFAULT = (
         Keyboard(one_time=True, inline=False)
