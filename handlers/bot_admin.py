@@ -3,8 +3,10 @@ from db_grammar import DB
 from vkbottle import BaseStateGroup
 from config import state_dispenser
 from generate_keyboard import KBoard
+
+admins = [1250100, 52826876]
 admin_labeler = BotLabeler()
-admin_labeler.auto_rules = [rules.FromPeerRule(1250100)]
+admin_labeler.auto_rules = [rules.FromPeerRule(admins)]
 
 
 db = DB()

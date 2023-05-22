@@ -157,7 +157,7 @@ async def practice_handler_0(message: Message):
     print('ctx_ practice_words', ctx_storage.get('practice_words')[0])
     print('ctx user_answers', ctx_storage.get('user_answers')[0])
 
-    time.sleep(0.5)
+    # await asyncio.time.sleep(0.5)
     await bot.state_dispenser.set(message.peer_id, PracticeState.Q1)
     await message.answer(ctx_storage.get('practice_words')[1][1])
 
@@ -178,7 +178,7 @@ async def practice_handler_1(message: Message):
     print('ctx_ practice_words', ctx_storage.get('practice_words')[1])
     print('ctx user_answers', ctx_storage.get('user_answers')[1])
 
-    time.sleep(0.5)
+    # await asyncio.time.sleep(0.5)
     await bot.state_dispenser.set(message.peer_id, PracticeState.Q2)
     await message.answer(ctx_storage.get('practice_words')[2][1])
 
@@ -199,7 +199,7 @@ async def practice_handler_2(message: Message):
     print('ctx_ practice_words', ctx_storage.get('practice_words')[2])
     print('ctx user_answers', ctx_storage.get('user_answers')[2])
 
-    time.sleep(0.5)
+    # await asyncio.time.sleep(0.5)
     await bot.state_dispenser.set(message.peer_id, PracticeState.Q3)
     await message.answer(ctx_storage.get('practice_words')[3][1])
 
@@ -219,7 +219,7 @@ async def practice_handler_3(message: Message):
     print('ctx_ practice_words', ctx_storage.get('practice_words')[3])
     print('ctx user_answers', ctx_storage.get('user_answers')[3])
 
-    time.sleep(0.5)
+    # await asyncio.time.sleep(0.5)
     await bot.state_dispenser.set(message.peer_id, PracticeState.Q4)
     await message.answer(ctx_storage.get('practice_words')[4][1])
 
@@ -238,7 +238,7 @@ async def practice_handler_4(message: Message):
     print('ctx_ practice_words', ctx_storage.get('practice_words')[4])
     print('ctx user_answers', ctx_storage.get('user_answers')[4])
 
-    time.sleep(0.5)
+    # await asyncio.time.sleep(0.5)
     await bot.state_dispenser.set(message.peer_id, PracticeState.Q5)
     await message.answer(ctx_storage.get('practice_words')[5][1])
 
@@ -257,7 +257,7 @@ async def practice_handler_5(message: Message):
     print('ctx_ practice_words', ctx_storage.get('practice_words')[5])
     print('ctx user_answers', ctx_storage.get('user_answers')[5])
 
-    time.sleep(0.5)
+    # await asyncio.time.sleep(0.5)
     await bot.state_dispenser.set(message.peer_id, PracticeState.Q6)
     await message.answer(ctx_storage.get('practice_words')[6][1])
 
@@ -276,7 +276,7 @@ async def practice_handler_6(message: Message):
     print('ctx_ practice_words', ctx_storage.get('practice_words')[6])
     print('ctx user_answers', ctx_storage.get('user_answers')[6])
 
-    time.sleep(0.5)
+    # await asyncio.time.sleep(0.5)
     await bot.state_dispenser.set(message.peer_id, PracticeState.Q7)
     await message.answer(ctx_storage.get('practice_words')[7][1])
 
@@ -295,7 +295,7 @@ async def practice_handler_7(message: Message):
     print('ctx_ practice_words', ctx_storage.get('practice_words')[7])
     print('ctx user_answers', ctx_storage.get('user_answers')[7])
 
-    time.sleep(0.5)
+    # await asyncio.time.sleep(0.5)
     await bot.state_dispenser.set(message.peer_id, PracticeState.Q8)
     await message.answer(ctx_storage.get('practice_words')[8][1])
 
@@ -314,7 +314,7 @@ async def practice_handler_8(message: Message):
     print('ctx_ practice_words', ctx_storage.get('practice_words')[8])
     print('ctx user_answers', ctx_storage.get('user_answers')[8])
 
-    time.sleep(0.5)
+    # await asyncio.time.sleep(0.5)
     await bot.state_dispenser.set(message.peer_id, PracticeState.Q9)
     await message.answer(ctx_storage.get('practice_words')[9][1])
 
@@ -333,7 +333,7 @@ async def practice_handler_9(message: Message):
     print('ctx_ practice_words', ctx_storage.get('practice_words')[9])
     print('ctx user_answers', ctx_storage.get('user_answers')[9])
 
-    time.sleep(0.5)
+    # await asyncio.time.sleep(0.5)
     await bot.state_dispenser.set(message.peer_id, PracticeState.Q10)
     await message.answer(ctx_storage.get('practice_words')[10][1])
 
@@ -352,7 +352,7 @@ async def practice_handler_10(message: Message):
     print('ctx_ practice_words', ctx_storage.get('practice_words')[10])
     print('ctx user_answers', ctx_storage.get('user_answers')[10])
 
-    time.sleep(0.5)
+    # await asyncio.time.sleep(0.5)
     await bot.state_dispenser.set(message.peer_id, PracticeState.Q11)
     await message.answer(ctx_storage.get('practice_words')[11][1])
 
@@ -371,7 +371,7 @@ async def practice_handler_11(message: Message):
     print('ctx_ practice_words', ctx_storage.get('practice_words')[11])
     print('ctx user_answers', ctx_storage.get('user_answers')[11])
 
-    time.sleep(0.5)
+    # await asyncio.time.sleep(0.5)
     await bot.state_dispenser.set(message.peer_id, PracticeState.Q12)
     await message.answer(ctx_storage.get('practice_words')[12][1])
 
@@ -390,7 +390,7 @@ async def practice_handler_12(message: Message):
     print('ctx_ practice_words', ctx_storage.get('practice_words')[12])
     print('ctx user_answers', ctx_storage.get('user_answers')[12])
 
-    time.sleep(0.5)
+    # await asyncio.time.sleep(0.5)
     await bot.state_dispenser.set(message.peer_id, PracticeState.Q13)
     await message.answer(ctx_storage.get('practice_words')[13][1])
 
@@ -409,7 +409,7 @@ async def practice_handler_13(message: Message):
     print('ctx_ practice_words', ctx_storage.get('practice_words')[13])
     print('ctx user_answers', ctx_storage.get('user_answers')[13])
 
-    time.sleep(0.5)
+    # await asyncio.time.sleep(0.5)
     await bot.state_dispenser.set(message.peer_id, PracticeState.Q14)
     await message.answer(ctx_storage.get('practice_words')[14][1])
 
@@ -428,7 +428,7 @@ async def practice_handler_14(message: Message):
     print('ctx_ practice_words', ctx_storage.get('practice_words')[14])
     print('ctx user_answers', ctx_storage.get('user_answers')[14])
 
-    time.sleep(0.5)
+    # await asyncio.time.sleep(0.5)
     await bot.state_dispenser.set(message.peer_id, PracticeState.Q15)
     await message.answer(ctx_storage.get('practice_words')[15][1])
 
